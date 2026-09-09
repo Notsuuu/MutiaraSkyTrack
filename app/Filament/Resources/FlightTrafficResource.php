@@ -80,12 +80,14 @@ class FlightTrafficResource extends Resource
                                 Forms\Components\TextInput::make('icao_code')
                                     ->label('Kode ICAO')
                                     ->maxLength(4)
-                                    ->uppercase()
+                                    ->extraInputAttributes(['style' => 'text-transform: uppercase'])
+                                    ->dehydrateStateUsing(fn (?string $state): ?string => $state ? strtoupper($state) : null)
                                     ->nullable(),
                                 Forms\Components\TextInput::make('iata_code')
                                     ->label('Kode IATA')
                                     ->maxLength(3)
-                                    ->uppercase()
+                                    ->extraInputAttributes(['style' => 'text-transform: uppercase'])
+                                    ->dehydrateStateUsing(fn (?string $state): ?string => $state ? strtoupper($state) : null)
                                     ->nullable(),
                             ])
                             ->columnSpan(2),
