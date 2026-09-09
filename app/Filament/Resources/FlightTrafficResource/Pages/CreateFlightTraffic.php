@@ -9,4 +9,9 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateFlightTraffic extends CreateRecord
 {
     protected static string $resource = FlightTrafficResource::class;
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }
