@@ -27,31 +27,6 @@
                 <x-heroicon-o-clock class="w-4 h-4 text-gray-500" />
                 Riwayat Berkas Diimpor
             </h3>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex flex-col justify-between shadow-sm">
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <x-heroicon-o-document-text class="w-7 h-7 text-emerald-600" />
-                            <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">692 Baris</span>
-                        </div>
-                        <h4 class="font-bold text-sm text-gray-800 dark:text-gray-200">DATA_LLAU_PLW_August_2026.xlsx</h4>
-                        <p class="text-[11px] text-gray-400 mt-1">Bulan 8/2026 · Diunggah oleh Administrator System</p>
-                        <p class="text-[10px] text-gray-400">2026-08-24 15:00:58</p>
-                    </div>
-                    <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-gray-800">
-                        <span class="text-xs font-semibold text-gray-500">Batch #1</span>
-                        <div class="flex gap-2">
-                            <x-filament::button size="xs" color="gray" icon="heroicon-o-eye">
-                                Lihat Data
-                            </x-filament::button>
-                            <x-filament::button size="xs" color="danger" icon="heroicon-o-trash">
-                                Hapus
-                            </x-filament::button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </x-filament-panels::page>
