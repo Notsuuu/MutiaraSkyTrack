@@ -35,7 +35,7 @@
     <x-filament::section
         heading="Riwayat Berkas Diimpor"
         icon="heroicon-o-clock"
-        description="{{ $history->isEmpty() ? 'Belum ada riwayat import. Riwayat akan muncul setelah Anda melakukan import.' : 'Setiap baris mewakili 1 batch import. Klik Hapus untuk menghapus seluruh data dari batch tersebut.' }}"
+        description="{{ $history->isEmpty() ? 'Belum ada riwayat import. Riwayat akan muncul setelah Anda melakukan import.' : 'Setiap baris mewakili 1 batch import. Klik Hapus untuk menghapus seluruh data dari batch tersebut secara permanen.' }}"
     >
         @if ($history->isNotEmpty())
             <div style="overflow-x: auto;">

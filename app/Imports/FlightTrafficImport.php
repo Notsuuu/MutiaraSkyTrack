@@ -34,13 +34,11 @@ use Maatwebsite\Excel\Concerns\WithValidation;
  * Total Pax | Transit Dewasa | Transit Anak | Transit Bayi |
  * Bagasi (Kg) | Kargo (Kg) | Pos (Kg)
  *
- * Kolom "No" dan "Total Pax" diabaikan saat import: "No" hanya nomor urut
- * baris, dan "Total Pax" adalah nilai turunan yang sudah dihitung otomatis
- * oleh accessor FlightTraffic::getTotalPaxAttribute().
+ * Kolom "No" dan "Total Pax" diabaikan saat import.
  *
  * Setiap pemanggilan Import akan menghasilkan UUID batch_id baru. Semua
- * record yang dihasilkan dari 1 file Excel akan memiliki batch_id yang
- * sama sehingga bisa dihapus bersama-sama dari halaman Riwayat Import.
+ * record yang dihasilkan dari 1 file Excel memiliki batch_id yang sama
+ * sehingga bisa dihapus bersama-sama dari halaman Riwayat Import.
  */
 class FlightTrafficImport implements
     ToCollection,
@@ -61,8 +59,11 @@ class FlightTrafficImport implements
     /** @var array<string,int> cache nama maskapai (lowercase) → airline_id */
     private array $airlineCache = [];
 
-    /** UUID unik untuk batch import ini — semua record hasil import ini akan memiliki nilai ini */
+    /** UUID unik untuk batch import ini */
     private string $batchId;
+
+    /** Detail error per baris untuk reporting ke user */
+    private array $rowErrors = [];
 
     public function __construct()
     {
@@ -71,82 +72,93 @@ class FlightTrafficImport implements
 
     public function collection(Collection $rows): void
     {
-        foreach ($rows as $index => $row) {
-            $rowNumber = $index + 2; // +2: heading row (baris 1) + index 0-based
+        // Disable Spatie Activity Log per-record selama import massal.
+        // Cegah 1000 activity_log entries saat import 1000 baris.
+        // Ringkasan tetap dicatat oleh halaman Import via activity() manual.
+        activity()->withoutLogs(function () use ($rows) {
+            foreach ($rows as $index => $row) {
+                $rowNumber = $index + 2; // +2: heading row + index 0-based
 
-            try {
-                $airline = $this->resolveOrCreateAirline($row['operator_maskapai'] ?? null);
+                try {
+                    $airline = $this->resolveOrCreateAirline($row['operator_maskapai'] ?? null);
 
-                if (! $airline) {
-                    $this->skipCount++;
-                    Log::warning('Import FlightTraffic: nama maskapai kosong, baris dilewati.', [
-                        'row' => $rowNumber,
+                    if (! $airline) {
+                        $this->skipCount++;
+                        $this->rowErrors[] = [
+                            'row'     => $rowNumber,
+                            'message' => 'Nama maskapai kosong',
+                        ];
+                        Log::warning('Import FlightTraffic: nama maskapai kosong, baris dilewati.', [
+                            'row' => $rowNumber,
+                        ]);
+                        continue;
+                    }
+
+                    $scheduleDate = $this->parseDate($row['tgl_jadwal'] ?? null);
+                    $scheduleTime = $this->parseTime($row['waktu_jadwal'] ?? null);
+                    $actualDate   = $this->parseDate($row['tgl_aktual'] ?? null);
+                    $actualTime   = $this->parseTime($row['waktu_aktual'] ?? null);
+
+                    $paxAdult  = (int) ($row['pax_dewasa'] ?? 0);
+                    $paxChild  = (int) ($row['pax_anak'] ?? 0);
+                    $paxInfant = (int) ($row['pax_bayi'] ?? 0);
+
+                    $this->assertTotalPaxConsistency($row, $paxAdult, $paxChild, $paxInfant, $rowNumber);
+
+                    FlightTraffic::create([
+                        'import_batch_id' => $this->batchId,
+
+                        'airline_id' => $airline->id,
+                        'created_by' => Auth::id(),
+
+                        'schedule_date' => $scheduleDate,
+                        'schedule_time' => $scheduleTime,
+                        'actual_date'   => $actualDate,
+                        'actual_time'   => $actualTime,
+
+                        'flight_number'         => strtoupper(trim((string) ($row['no_penerbangan'] ?? ''))),
+                        'aircraft_type'         => strtoupper(trim((string) ($row['tipe_armada'] ?? ''))),
+                        'aircraft_registration' => strtoupper(trim((string) ($row['registrasi'] ?? ''))),
+                        'seat_capacity'         => (int) ($row['kapasitas'] ?? 0),
+
+                        'flight_status' => $this->normalizeStatus((string) ($row['status'] ?? '')),
+                        'activity_type' => $this->normalizeActivity((string) ($row['kegiatan'] ?? '')),
+                        'coverage'      => $this->normalizeCoverage((string) ($row['cakupan'] ?? '')),
+                        'movement'      => $this->normalizeMovement((string) ($row['pergerakan'] ?? '')),
+
+                        'origin_iata'      => strtoupper(trim((string) ($row['asal'] ?? ''))),
+                        'destination_iata' => strtoupper(trim((string) ($row['tujuan'] ?? ''))),
+
+                        'delay_category' => $this->nullableTrim($row['kategori_delay'] ?? null),
+                        'delay_reason'   => $this->nullableTrim($row['keterangan_delay'] ?? null),
+
+                        'pax_adult'  => $paxAdult,
+                        'pax_child'  => $paxChild,
+                        'pax_infant' => $paxInfant,
+
+                        'transit_pax_adult'  => (int) ($row['transit_dewasa'] ?? 0),
+                        'transit_pax_child'  => (int) ($row['transit_anak'] ?? 0),
+                        'transit_pax_infant' => (int) ($row['transit_bayi'] ?? 0),
+
+                        'baggage_kg' => (float) ($row['bagasi_kg'] ?? 0),
+                        'cargo_kg'   => (float) ($row['kargo_kg'] ?? 0),
+                        'mail_kg'    => (float) ($row['pos_kg'] ?? 0),
                     ]);
-                    continue;
+
+                    $this->successCount++;
+
+                } catch (\Throwable $e) {
+                    $this->skipCount++;
+                    $this->rowErrors[] = [
+                        'row'     => $rowNumber,
+                        'message' => $e->getMessage(),
+                    ];
+                    Log::error("Import FlightTraffic: error pada baris {$rowNumber}", [
+                        'error' => $e->getMessage(),
+                    ]);
                 }
-
-                $scheduleDate = $this->parseDate($row['tgl_jadwal'] ?? null);
-                $scheduleTime = $this->parseTime($row['waktu_jadwal'] ?? null);
-                $actualDate   = $this->parseDate($row['tgl_aktual'] ?? null);
-                $actualTime   = $this->parseTime($row['waktu_aktual'] ?? null);
-
-                $paxAdult  = (int) ($row['pax_dewasa'] ?? 0);
-                $paxChild  = (int) ($row['pax_anak'] ?? 0);
-                $paxInfant = (int) ($row['pax_bayi'] ?? 0);
-
-                $this->assertTotalPaxConsistency($row, $paxAdult, $paxChild, $paxInfant, $rowNumber);
-
-                FlightTraffic::create([
-                    // ⚠️ Batch ID — semua record hasil import ini punya nilai yang sama
-                    'import_batch_id' => $this->batchId,
-
-                    'airline_id' => $airline->id,
-                    'created_by' => Auth::id(),
-
-                    'schedule_date' => $scheduleDate,
-                    'schedule_time' => $scheduleTime,
-                    'actual_date'   => $actualDate,
-                    'actual_time'   => $actualTime,
-
-                    'flight_number'         => strtoupper(trim((string) ($row['no_penerbangan'] ?? ''))),
-                    'aircraft_type'         => strtoupper(trim((string) ($row['tipe_armada'] ?? ''))),
-                    'aircraft_registration' => strtoupper(trim((string) ($row['registrasi'] ?? ''))),
-                    'seat_capacity'         => (int) ($row['kapasitas'] ?? 0),
-
-                    'flight_status' => $this->normalizeStatus((string) ($row['status'] ?? '')),
-                    'activity_type' => $this->normalizeActivity((string) ($row['kegiatan'] ?? '')),
-                    'coverage'      => $this->normalizeCoverage((string) ($row['cakupan'] ?? '')),
-                    'movement'      => $this->normalizeMovement((string) ($row['pergerakan'] ?? '')),
-
-                    'origin_iata'      => strtoupper(trim((string) ($row['asal'] ?? ''))),
-                    'destination_iata' => strtoupper(trim((string) ($row['tujuan'] ?? ''))),
-
-                    'delay_category' => $this->nullableTrim($row['kategori_delay'] ?? null),
-                    'delay_reason'   => $this->nullableTrim($row['keterangan_delay'] ?? null),
-
-                    'pax_adult'  => $paxAdult,
-                    'pax_child'  => $paxChild,
-                    'pax_infant' => $paxInfant,
-
-                    'transit_pax_adult'  => (int) ($row['transit_dewasa'] ?? 0),
-                    'transit_pax_child'  => (int) ($row['transit_anak'] ?? 0),
-                    'transit_pax_infant' => (int) ($row['transit_bayi'] ?? 0),
-
-                    'baggage_kg' => (float) ($row['bagasi_kg'] ?? 0),
-                    'cargo_kg'   => (float) ($row['kargo_kg'] ?? 0),
-                    'mail_kg'    => (float) ($row['pos_kg'] ?? 0),
-                ]);
-
-                $this->successCount++;
-
-            } catch (\Throwable $e) {
-                $this->skipCount++;
-                Log::error("Import FlightTraffic: error pada baris {$rowNumber}", [
-                    'error' => $e->getMessage(),
-                    'row'   => $row->toArray(),
-                ]);
             }
-        }
+        });
     }
 
     // ──────────────────────────────────────
@@ -229,12 +241,23 @@ class FlightTrafficImport implements
     }
 
     /**
-     * Getter untuk batch ID — dipakai halaman Import untuk mencatat di activity log
+     * UUID batch import ini. Dipakai halaman Import untuk dicatat di activity log
      * dan memungkinkan penghapusan massal berdasarkan batch.
      */
     public function getBatchId(): string
     {
         return $this->batchId;
+    }
+
+    /**
+     * Detail error per baris. Berguna untuk menampilkan warning yang informatif
+     * ke user: "Baris 15: nama maskapai kosong", dst.
+     *
+     * @return array<int, array{row:int, message:string}>
+     */
+    public function getRowErrors(): array
+    {
+        return $this->rowErrors;
     }
 
     // ──────────────────────────────────────
@@ -417,7 +440,7 @@ class FlightTrafficImport implements
 
         if ($expected !== $actual) {
             Log::warning("Import FlightTraffic: Total Pax tidak konsisten pada baris {$rowNumber}.", [
-                'total_pax_file'    => $actual,
+                'total_pax_file'     => $actual,
                 'total_pax_dihitung' => $expected,
             ]);
         }

@@ -14,6 +14,12 @@ class ViewFlightTraffic extends ViewRecord
     {
         return [
             Actions\EditAction::make(),
+            Actions\DeleteAction::make(),
         ];
+    }
+
+    public function getTitle(): string
+    {
+        return 'Detail Penerbangan';
     }
 }

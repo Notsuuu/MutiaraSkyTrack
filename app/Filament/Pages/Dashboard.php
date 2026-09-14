@@ -15,8 +15,8 @@ class Dashboard extends BaseDashboard
     // ⚠️ INI YANG SEBELUMNYA LUPA — paksa pakai view custom
     protected string $view = 'filament.pages.dashboard';
 
-    protected static ?string $title = 'Ringkasan Lalu Lintas Udara';
-    protected static ?string $navigationLabel = 'Ringkasan Lalu Lintas Udara';
+    protected static ?string $title = 'Dashboard';
+    protected static ?string $navigationLabel = 'Dashboard';
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-home';
 
     public function filtersForm(Schema $schema): Schema

@@ -19,9 +19,9 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
@@ -46,7 +46,7 @@ class FlightTrafficResource extends Resource
     protected static ?string $recordTitleAttribute = 'flight_number';
 
     // ──────────────────────────────────────
-    // NAVIGATION & PERMISSIONS
+    // NAVIGATION
     // ──────────────────────────────────────
 
     public static function getNavigationItems(): array
@@ -656,8 +656,6 @@ class FlightTrafficResource extends Resource
                     Actions\ViewAction::make()->label('Lihat'),
                     Actions\EditAction::make()->label('Edit'),
                     Actions\DeleteAction::make()->label('Hapus'),
-                    Actions\RestoreAction::make()->label('Pulihkan'),
-                    Actions\ForceDeleteAction::make()->label('Hapus Permanen'),
                 ]),
             ])
             ->headerActions([
@@ -703,6 +701,7 @@ class FlightTrafficResource extends Resource
                             $import = new FlightTrafficImport();
                             Excel::import($import, $filePath);
 
+                            $batchId          = $import->getBatchId();
                             $successCount     = $import->getSuccessCount();
                             $skipCount        = $import->getSkipCount();
                             $failureCount     = count($import->failures());
@@ -735,6 +734,7 @@ class FlightTrafficResource extends Resource
                                     'skip_count'         => $totalIssues,
                                     'auto_created_count' => $autoCreatedCount,
                                     'file'               => $data['attachment'],
+                                    'batch_id'           => $batchId,
                                 ])
                                 ->log('Import data penerbangan dari Excel');
 
@@ -758,8 +758,6 @@ class FlightTrafficResource extends Resource
             ->toolbarActions([
                 Actions\BulkActionGroup::make([
                     Actions\DeleteBulkAction::make()->label('Hapus Terpilih'),
-                    Actions\RestoreBulkAction::make()->label('Pulihkan Terpilih'),
-                    Actions\ForceDeleteBulkAction::make()->label('Hapus Permanen'),
                 ]),
             ])
             ->striped()
@@ -771,7 +769,7 @@ class FlightTrafficResource extends Resource
     }
 
     // ──────────────────────────────────────
-    // RESOURCE PAGES & SCOPES
+    // RESOURCE PAGES
     // ──────────────────────────────────────
 
     public static function getRelations(): array
@@ -793,9 +791,6 @@ class FlightTrafficResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ])
             ->with(['airline', 'creator']);
     }
 }

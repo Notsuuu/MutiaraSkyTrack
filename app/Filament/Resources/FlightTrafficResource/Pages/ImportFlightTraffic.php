@@ -58,9 +58,6 @@ class ImportFlightTraffic extends Page implements HasForms
             ->statePath('data');
     }
 
-    /**
-     * Riwayat import diambil dari Spatie Activity Log
-     */
     public function getImportHistory(): Collection
     {
         return Activity::query()
@@ -140,7 +137,9 @@ class ImportFlightTraffic extends Page implements HasForms
     }
 
     /**
-     * Hapus semua data penerbangan yang berasal dari batch import tertentu.
+     * Hapus PERMANEN semua data penerbangan dari batch import tertentu.
+     * Karena model FlightTraffic tidak lagi pakai SoftDeletes,
+     * ->delete() = hard delete langsung dari database.
      */
     public function deleteBatch(int $activityId): void
     {
@@ -160,22 +159,22 @@ class ImportFlightTraffic extends Page implements HasForms
         if (! $batchId) {
             Notification::make()
                 ->title('Batch ID tidak ditemukan')
-                ->body('Import ini tidak memiliki batch ID (kemungkinan dari versi lama). Tidak dapat dihapus otomatis.')
+                ->body('Import ini tidak memiliki batch ID.')
                 ->warning()
                 ->persistent()
                 ->send();
             return;
         }
 
+        // HARD DELETE — permanen dari database
         $deletedCount = FlightTraffic::where('import_batch_id', $batchId)->delete();
 
         Notification::make()
             ->title('Batch berhasil dihapus')
-            ->body("{$deletedCount} data penerbangan dari batch ini telah dihapus.")
+            ->body("{$deletedCount} data penerbangan dari batch ini telah dihapus permanen.")
             ->success()
             ->send();
 
-        // Hapus record activity agar tidak muncul lagi di riwayat
         $activity->delete();
 
         activity()

@@ -13,6 +13,7 @@ class EditFlightTraffic extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\ViewAction::make(),
             Actions\DeleteAction::make(),
         ];
     }
@@ -20,5 +21,10 @@ class EditFlightTraffic extends EditRecord
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
+    }
+
+    public function getTitle(): string
+    {
+        return 'Edit Data Penerbangan';
     }
 }

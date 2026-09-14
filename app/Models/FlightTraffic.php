@@ -11,7 +11,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class FlightTraffic extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory, LogsActivity;
 
     /**
      * Nama tabel di database.
