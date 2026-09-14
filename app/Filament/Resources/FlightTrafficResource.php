@@ -562,20 +562,23 @@ class FlightTrafficResource extends Resource
             ->filters([
                 // 1. Filter Tanggal
                 Filter::make('schedule_date')
-                    ->label('')
-                    ->schema([
+                    ->form([
                         Forms\Components\DatePicker::make('date')
-                            ->hiddenLabel()
-                            ->placeholder('mm / dd / yyyy')
+                            ->label('Tanggal Penerbangan')
+                            ->placeholder('Pilih Tanggal')
                             ->native(false),
                     ])
                     ->query(fn (Builder $query, array $data) => $query
                         ->when($data['date'], fn ($q, $date) => $q->whereDate('schedule_date', $date))
-                    ),
+                    )
+                    ->indicateUsing(function (array $data): ?string {
+                        if (! $data['date']) return null;
+                        return 'Tanggal: ' . \Carbon\Carbon::parse($data['date'])->format('d M Y');
+                    }),
 
                 // 2. Filter Bulan
                 SelectFilter::make('month')
-                    ->label('')
+                    ->label('Bulan')
                     ->placeholder('Semua Bulan')
                     ->native(false)
                     ->options([
@@ -590,7 +593,7 @@ class FlightTrafficResource extends Resource
 
                 // 3. Filter Tahun
                 SelectFilter::make('year')
-                    ->label('')
+                    ->label('Tahun')
                     ->placeholder('Semua Tahun')
                     ->native(false)
                     ->options(fn () => array_combine(
@@ -604,7 +607,7 @@ class FlightTrafficResource extends Resource
 
                 // 4. Filter Maskapai
                 SelectFilter::make('airline_id')
-                    ->label('')
+                    ->label('Maskapai')
                     ->placeholder('Semua Maskapai')
                     ->native(false)
                     ->relationship('airline', 'brand_name')
@@ -613,7 +616,7 @@ class FlightTrafficResource extends Resource
 
                 // 5. Filter Pergerakan
                 SelectFilter::make('movement')
-                    ->label('')
+                    ->label('Pergerakan')
                     ->placeholder('Semua Pergerakan')
                     ->native(false)
                     ->options([
@@ -623,9 +626,10 @@ class FlightTrafficResource extends Resource
 
                 // 6. Filter Asal
                 SelectFilter::make('origin_iata')
-                    ->label('')
+                    ->label('Bandara Asal')
                     ->placeholder('Semua Asal')
                     ->native(false)
+                    ->searchable()
                     ->options(fn () => FlightTraffic::query()
                         ->whereNotNull('origin_iata')
                         ->pluck('origin_iata', 'origin_iata')
@@ -634,22 +638,23 @@ class FlightTrafficResource extends Resource
 
                 // 7. Filter Tujuan
                 SelectFilter::make('destination_iata')
-                    ->label('')
+                    ->label('Bandara Tujuan')
                     ->placeholder('Semua Tujuan')
                     ->native(false)
+                    ->searchable()
                     ->options(fn () => FlightTraffic::query()
                         ->whereNotNull('destination_iata')
                         ->pluck('destination_iata', 'destination_iata')
                         ->toArray()
                     ),
             ])
-            ->filtersLayout(Tables\Enums\FiltersLayout::AboveContent)
+            ->filtersLayout(Tables\Enums\FiltersLayout::AboveContentCollapsible)
             ->deferFilters(false)
             ->filtersFormColumns([
                 'default' => 1,
                 'sm' => 2,
-                'md' => 4,
-                'xl' => 7,
+                'md' => 3,
+                'xl' => 4,
             ])
             ->recordActions([
                 Actions\ActionGroup::make([
