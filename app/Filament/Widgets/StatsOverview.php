@@ -3,10 +3,14 @@
 namespace App\Filament\Widgets;
 
 use App\Models\FlightTraffic;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\Widget;
+use Illuminate\Database\Eloquent\Builder;
 
 class StatsOverview extends Widget
 {
+    use InteractsWithPageFilters;
+
     protected string $view = 'filament.widgets.stats-overview';
 
     protected static ?int $sort = 1;
@@ -15,7 +19,15 @@ class StatsOverview extends Widget
 
     public function getStats(): array
     {
-        $query = FlightTraffic::query()->thisYear();
+        $tgl   = $this->filters['tgl'] ?? null;
+        $bulan = $this->filters['bulan'] ?? null;
+        $tahun = $this->filters['tahun'] ?? null;
+
+        $query = FlightTraffic::query()
+            ->when($tgl, fn (Builder $q) => $q->whereDate('schedule_date', $tgl))
+            ->when(! $tgl && $bulan, fn (Builder $q) => $q->whereMonth('schedule_date', $bulan))
+            ->when(! $tgl && $tahun, fn (Builder $q) => $q->whereYear('schedule_date', $tahun))
+            ->when(! $tgl && ! $bulan && ! $tahun, fn (Builder $q) => $q->thisYear());
 
         $totalPassengers = (clone $query)->get()->sum(fn (FlightTraffic $f) => $f->total_all_pax);
         $totalBaggage    = (float) (clone $query)->sum('baggage_kg');

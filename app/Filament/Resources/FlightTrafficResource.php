@@ -148,10 +148,9 @@ class FlightTrafficResource extends Resource
     {
         return $schema
             ->components([
-                // ── Section 1: Jadwal & Identitas ─────────────────────────────────
-                Section::make('Jadwal & Identitas Penerbangan')
-                    ->description('Informasi waktu rencana dan realisasi penerbangan.')
-                    ->icon('heroicon-o-calendar-days')
+                // ── 1. INFORMASI ARMADA ─────────────────────────────────
+                Section::make('Informasi Armada')
+                    ->icon('heroicon-o-paper-airplane')
                     ->schema([
                         Forms\Components\Select::make('airline_id')
                             ->label('Maskapai')
@@ -187,113 +186,142 @@ class FlightTrafficResource extends Resource
                                     ->dehydrateStateUsing(fn (?string $state) => $state ? strtoupper($state) : null)
                                     ->nullable(),
                             ])
-                            ->columnSpan(2),
+                            ->columnSpanFull(),
 
-                        Forms\Components\TextInput::make('flight_number')
-                            ->label('Nomor Penerbangan')
-                            ->required()
-                            ->maxLength(10)
-                            ->placeholder('GA-102 atau 781')
-                            ->upperCase()
-                            ->prefixIcon('heroicon-o-hashtag'),
+                        \Filament\Schemas\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('flight_number')
+                                    ->label('Nomor Penerbangan')
+                                    ->required()
+                                    ->maxLength(10)
+                                    ->placeholder('GA-102 atau 781')
+                                    ->upperCase()
+                                    ->prefixIcon('heroicon-o-hashtag'),
 
-                        Forms\Components\TextInput::make('aircraft_type')
-                            ->label('Tipe Pesawat')
-                            ->required()
-                            ->maxLength(20)
-                            ->placeholder('B738')
-                            ->upperCase()
-                            ->prefixIcon('heroicon-o-paper-airplane'),
+                                Forms\Components\TextInput::make('aircraft_type')
+                                    ->label('Tipe Pesawat')
+                                    ->required()
+                                    ->maxLength(20)
+                                    ->placeholder('B738')
+                                    ->upperCase()
+                                    ->prefixIcon('heroicon-o-paper-airplane'),
 
-                        Forms\Components\TextInput::make('aircraft_registration')
-                            ->label('Registrasi Pesawat')
-                            ->maxLength(15)
-                            ->nullable()
-                            ->placeholder('PK-GFA')
-                            ->upperCase()
-                            ->prefixIcon('heroicon-o-tag'),
+                                Forms\Components\TextInput::make('aircraft_registration')
+                                    ->label('Registrasi Pesawat')
+                                    ->maxLength(15)
+                                    ->nullable()
+                                    ->placeholder('PK-GFA')
+                                    ->upperCase()
+                                    ->prefixIcon('heroicon-o-tag'),
 
-                        Forms\Components\TextInput::make('seat_capacity')
-                            ->label('Kapasitas Kursi')
-                            ->numeric()
-                            ->integer()
-                            ->minValue(0)
-                            ->maxValue(1000)
-                            ->default(0)
-                            ->suffix('kursi')
-                            ->prefixIcon('heroicon-o-users'),
+                                Forms\Components\TextInput::make('seat_capacity')
+                                    ->label('Kapasitas Kursi')
+                                    ->numeric()
+                                    ->integer()
+                                    ->minValue(0)
+                                    ->maxValue(1000)
+                                    ->default(0)
+                                    ->suffix('kursi')
+                                    ->prefixIcon('heroicon-o-users'),
+                            ]),
+                    ]),
 
-                        Forms\Components\DatePicker::make('schedule_date')
-                            ->label('Tanggal Rencana')
-                            ->required()
-                            ->native(false)
-                            ->displayFormat('d/m/Y')
-                            ->maxDate(now()->addYears(1))
-                            ->prefixIcon('heroicon-o-calendar'),
-
-                        Forms\Components\TimePicker::make('schedule_time')
-                            ->label('Jam Rencana (STD/STA)')
-                            ->required()
-                            ->seconds(false)
-                            ->prefixIcon('heroicon-o-clock'),
-
-                        Forms\Components\DatePicker::make('actual_date')
-                            ->label('Tanggal Realisasi')
-                            ->nullable()
-                            ->native(false)
-                            ->displayFormat('d/m/Y')
-                            ->prefixIcon('heroicon-o-calendar-days'),
-
-                        Forms\Components\TimePicker::make('actual_time')
-                            ->label('Jam Realisasi (ATD/ATA)')
-                            ->nullable()
-                            ->seconds(false)
-                            ->prefixIcon('heroicon-o-clock'),
-                    ])
-                    ->columns(4),
-
-                // ── Section 2: Klasifikasi & Rute ─────────────────────────────────
-                Section::make('Klasifikasi & Rute')
-                    ->description('Status penerbangan, jenis kegiatan, dan informasi rute.')
+                // ── 2. RUTE & JADWAL ─────────────────────────────────
+                Section::make('Rute & Jadwal')
                     ->icon('heroicon-o-map-pin')
                     ->schema([
-                        Forms\Components\ToggleButtons::make('flight_status')
-                            ->label('Status Penerbangan')
-                            ->options(self::getStatusOptions())
-                            ->colors(['Ontime' => 'success', 'Delay' => 'warning', 'Cancel' => 'danger'])
-                            ->icons([
-                                'Ontime' => 'heroicon-o-check-circle',
-                                'Delay'  => 'heroicon-o-clock',
-                                'Cancel' => 'heroicon-o-x-circle',
-                            ])
-                            ->inline()
-                            ->required()
-                            ->live()
-                            ->default('Ontime'),
+                        \Filament\Schemas\Components\Grid::make(2)
+                            ->schema([
+                                self::airportInput('origin_iata', 'Bandara Asal', 'heroicon-o-arrow-right-start-on-rectangle', 'CGK atau LOCAL AREA'),
+                                self::airportInput('destination_iata', 'Bandara Tujuan', 'heroicon-o-arrow-left-end-on-rectangle', 'PLW atau LOCAL AREA'),
+                            ]),
 
-                        Forms\Components\ToggleButtons::make('movement')
-                            ->label('Pergerakan')
-                            ->options(['Arrival' => 'Arrival (Datang)', 'Departure' => 'Departure (Berangkat)'])
-                            ->colors(['Arrival' => 'info', 'Departure' => 'warning'])
-                            ->icons(['Arrival' => 'heroicon-o-arrow-down-tray', 'Departure' => 'heroicon-o-arrow-up-tray'])
-                            ->inline()
-                            ->required()
-                            ->default('Departure'),
+                        \Filament\Schemas\Components\Grid::make(2)
+                            ->schema([
+                                Fieldset::make('Waktu Rencana (Schedule)')
+                                    ->schema([
+                                        Forms\Components\DatePicker::make('schedule_date')
+                                            ->label('Tanggal Rencana')
+                                            ->required()
+                                            ->native(false)
+                                            ->displayFormat('d/m/Y')
+                                            ->maxDate(now()->addYears(1))
+                                            ->prefixIcon('heroicon-o-calendar'),
 
-                        Forms\Components\Select::make('activity_type')
-                            ->label('Jenis Kegiatan')
-                            ->options(self::getActivityTypeOptions())
-                            ->required()
-                            ->native(false)
-                            ->default('Berjadwal'),
+                                        Forms\Components\TimePicker::make('schedule_time')
+                                            ->label('Jam Rencana (STD/STA)')
+                                            ->required()
+                                            ->seconds(false)
+                                            ->prefixIcon('heroicon-o-clock'),
+                                    ])
+                                    ->columns(1),
 
-                        Forms\Components\ToggleButtons::make('coverage')
-                            ->label('Cakupan')
-                            ->options(['Domestik' => 'Domestik', 'Internasional' => 'Internasional'])
-                            ->colors(['Domestik' => 'info', 'Internasional' => 'warning'])
-                            ->inline()
-                            ->required()
-                            ->default('Domestik'),
+                                Fieldset::make('Waktu Realisasi (Actual)')
+                                    ->schema([
+                                        Forms\Components\DatePicker::make('actual_date')
+                                            ->label('Tanggal Realisasi')
+                                            ->nullable()
+                                            ->native(false)
+                                            ->displayFormat('d/m/Y')
+                                            ->prefixIcon('heroicon-o-calendar-days'),
+
+                                        Forms\Components\TimePicker::make('actual_time')
+                                            ->label('Jam Realisasi (ATD/ATA)')
+                                            ->nullable()
+                                            ->seconds(false)
+                                            ->prefixIcon('heroicon-o-clock'),
+                                    ])
+                                    ->columns(1),
+                            ]),
+                    ]),
+
+                // ── 3. KLASIFIKASI & STATUS ─────────────────────────────────
+                Section::make('Klasifikasi & Status')
+                    ->icon('heroicon-o-tag')
+                    ->schema([
+                        \Filament\Schemas\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\ToggleButtons::make('movement')
+                                    ->label('Pergerakan')
+                                    ->options(['Arrival' => 'Arrival (Datang)', 'Departure' => 'Departure (Berangkat)'])
+                                    ->colors(['Arrival' => 'info', 'Departure' => 'warning'])
+                                    ->icons(['Arrival' => 'heroicon-o-arrow-down-tray', 'Departure' => 'heroicon-o-arrow-up-tray'])
+                                    ->inline()
+                                    ->required()
+                                    ->default('Departure'),
+
+                                Forms\Components\ToggleButtons::make('coverage')
+                                    ->label('Cakupan')
+                                    ->options(['Domestik' => 'Domestik', 'Internasional' => 'Internasional'])
+                                    ->colors(['Domestik' => 'info', 'Internasional' => 'warning'])
+                                    ->inline()
+                                    ->required()
+                                    ->default('Domestik'),
+                            ]),
+
+                        \Filament\Schemas\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\Select::make('activity_type')
+                                    ->label('Jenis Kegiatan')
+                                    ->options(self::getActivityTypeOptions())
+                                    ->required()
+                                    ->native(false)
+                                    ->default('Berjadwal'),
+
+                                Forms\Components\ToggleButtons::make('flight_status')
+                                    ->label('Status Penerbangan')
+                                    ->options(self::getStatusOptions())
+                                    ->colors(['Ontime' => 'success', 'Delay' => 'warning', 'Cancel' => 'danger'])
+                                    ->icons([
+                                        'Ontime' => 'heroicon-o-check-circle',
+                                        'Delay'  => 'heroicon-o-clock',
+                                        'Cancel' => 'heroicon-o-x-circle',
+                                    ])
+                                    ->inline()
+                                    ->required()
+                                    ->live()
+                                    ->default('Ontime'),
+                            ]),
 
                         Fieldset::make('Informasi Delay')
                             ->schema([
@@ -302,7 +330,6 @@ class FlightTrafficResource extends Resource
                                     ->maxLength(150)
                                     ->placeholder('Contoh: Manajemen Airlines, Cuaca, Teknis')
                                     ->nullable(),
-
                                 Forms\Components\Textarea::make('delay_reason')
                                     ->label('Keterangan Delay')
                                     ->rows(2)
@@ -312,54 +339,49 @@ class FlightTrafficResource extends Resource
                             ->columns(2)
                             ->columnSpanFull()
                             ->visible(fn (Get $get) => $get('flight_status') === 'Delay'),
-
-                        self::airportInput('origin_iata', 'Bandara Asal', 'heroicon-o-arrow-right-start-on-rectangle', 'CGK atau LOCAL AREA'),
-                        self::airportInput('destination_iata', 'Bandara Tujuan', 'heroicon-o-arrow-left-end-on-rectangle', 'PLW atau LOCAL AREA'),
-                    ])
-                    ->columns(2),
-
-                // ── Section 3: Manifest Penumpang ─────────────────────────────────
-                Section::make('Manifest Penumpang')
-                    ->description('Data penumpang utama dan transit.')
-                    ->icon('heroicon-o-user-group')
-                    ->schema([
-                        Fieldset::make('Penumpang Utama')
-                            ->schema([
-                                self::paxInput('pax_adult', 'Dewasa'),
-                                self::paxInput('pax_child', 'Anak-Anak'),
-                                self::paxInput('pax_infant', 'Bayi (Infant)'),
-                            ])->columns(3),
-
-                        Fieldset::make('Penumpang Transit')
-                            ->schema([
-                                self::paxInput('transit_pax_adult', 'Dewasa (Transit)'),
-                                self::paxInput('transit_pax_child', 'Anak-Anak (Transit)'),
-                                self::paxInput('transit_pax_infant', 'Bayi (Transit)'),
-                            ])->columns(3),
                     ]),
 
-                // ── Section 4: Muatan Logistik ────────────────────────────────────
-                Section::make('Muatan Logistik')
-                    ->description('Data berat muatan dalam satuan kilogram.')
+                // ── 4. PAYLOAD ─────────────────────────────────
+                Section::make('Payload (Muatan)')
                     ->icon('heroicon-o-scale')
                     ->schema([
-                        self::kgInput('baggage_kg', 'Bagasi', 'heroicon-o-briefcase'),
-                        self::kgInput('cargo_kg', 'Kargo', 'heroicon-o-archive-box'),
-                        self::kgInput('mail_kg', 'Pos / Mail', 'heroicon-o-envelope'),
-                    ])->columns(3),
+                        \Filament\Schemas\Components\Grid::make(3)
+                            ->schema([
+                                Section::make('Penumpang Utama')
+                                    ->schema([
+                                        self::paxInput('pax_adult', 'Dewasa'),
+                                        self::paxInput('pax_child', 'Anak-Anak'),
+                                        self::paxInput('pax_infant', 'Bayi (Infant)'),
+                                    ])
+                                    ->columnSpan(1),
 
-                // ── Section 5: Keterangan ─────────────────────────────────────────
-                Section::make('Keterangan Tambahan')
-                    ->schema([
+                                Section::make('Penumpang Transit')
+                                    ->schema([
+                                        self::paxInput('transit_pax_adult', 'Dewasa (Transit)'),
+                                        self::paxInput('transit_pax_child', 'Anak-Anak (Transit)'),
+                                        self::paxInput('transit_pax_infant', 'Bayi (Transit)'),
+                                    ])
+                                    ->columnSpan(1),
+
+                                Section::make('Muatan Logistik')
+                                    ->schema([
+                                        self::kgInput('baggage_kg', 'Bagasi', 'heroicon-o-briefcase'),
+                                        self::kgInput('cargo_kg', 'Kargo', 'heroicon-o-archive-box'),
+                                        self::kgInput('mail_kg', 'Pos / Mail', 'heroicon-o-envelope'),
+                                    ])
+                                    ->columnSpan(1),
+                            ]),
+
                         Forms\Components\Textarea::make('remarks')
-                            ->label('Keterangan')
+                            ->label('Keterangan Tambahan')
                             ->nullable()
                             ->maxLength(2000)
-                            ->rows(3)
-                            ->placeholder('Informasi tambahan umum, tidak terbatas pada penyebab delay.'),
-                    ])
-                    ->collapsed(),
-            ]);
+                            ->rows(2)
+                            ->placeholder('Informasi tambahan umum, tidak terbatas pada penyebab delay.')
+                            ->columnSpanFull(),
+                    ]),
+            ])
+            ->columns(1);
     }
 
     // ──────────────────────────────────────
