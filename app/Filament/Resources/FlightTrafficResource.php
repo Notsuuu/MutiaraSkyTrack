@@ -7,35 +7,43 @@ use App\Filament\Resources\FlightTrafficResource\Pages;
 use App\Imports\FlightTrafficImport;
 use App\Models\Airline;
 use App\Models\FlightTraffic;
+use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Navigation\NavigationItem;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\TernaryFilter;
-use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use UnitEnum;
 
 class FlightTrafficResource extends Resource
 {
     protected static ?string $model = FlightTraffic::class;
-    protected static ?string $navigationIcon = 'heroicon-o-chart-bar-square';
+
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chart-bar-square';
+
     protected static ?string $navigationLabel = 'Data Lalu Lintas';
-    protected static ?string $navigationGroup = 'Penerbangan';
+
+    protected static string | UnitEnum | null $navigationGroup = 'Kelola Data';
+
     protected static ?int $navigationSort = 1;
+
     protected static ?string $modelLabel = 'Data Penerbangan';
+
     protected static ?string $pluralModelLabel = 'Data Penerbangan';
+
     protected static ?string $recordTitleAttribute = 'flight_number';
-    protected static bool $shouldRegisterNavigation = true;
 
     // ──────────────────────────────────────
     // NAVIGATION & PERMISSIONS
@@ -136,12 +144,12 @@ class FlightTrafficResource extends Resource
     // FORM SCHEMA
     // ──────────────────────────────────────
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 // ── Section 1: Jadwal & Identitas ─────────────────────────────────
-                Forms\Components\Section::make('Jadwal & Identitas Penerbangan')
+                Section::make('Jadwal & Identitas Penerbangan')
                     ->description('Informasi waktu rencana dan realisasi penerbangan.')
                     ->icon('heroicon-o-calendar-days')
                     ->schema([
@@ -245,7 +253,7 @@ class FlightTrafficResource extends Resource
                     ->columns(4),
 
                 // ── Section 2: Klasifikasi & Rute ─────────────────────────────────
-                Forms\Components\Section::make('Klasifikasi & Rute')
+                Section::make('Klasifikasi & Rute')
                     ->description('Status penerbangan, jenis kegiatan, dan informasi rute.')
                     ->icon('heroicon-o-map-pin')
                     ->schema([
@@ -287,7 +295,7 @@ class FlightTrafficResource extends Resource
                             ->required()
                             ->default('Domestik'),
 
-                        Forms\Components\Fieldset::make('Informasi Delay')
+                        Fieldset::make('Informasi Delay')
                             ->schema([
                                 Forms\Components\TextInput::make('delay_category')
                                     ->label('Kategori Delay')
@@ -311,18 +319,18 @@ class FlightTrafficResource extends Resource
                     ->columns(2),
 
                 // ── Section 3: Manifest Penumpang ─────────────────────────────────
-                Forms\Components\Section::make('Manifest Penumpang')
+                Section::make('Manifest Penumpang')
                     ->description('Data penumpang utama dan transit.')
                     ->icon('heroicon-o-user-group')
                     ->schema([
-                        Forms\Components\Fieldset::make('Penumpang Utama')
+                        Fieldset::make('Penumpang Utama')
                             ->schema([
                                 self::paxInput('pax_adult', 'Dewasa'),
                                 self::paxInput('pax_child', 'Anak-Anak'),
                                 self::paxInput('pax_infant', 'Bayi (Infant)'),
                             ])->columns(3),
 
-                        Forms\Components\Fieldset::make('Penumpang Transit')
+                        Fieldset::make('Penumpang Transit')
                             ->schema([
                                 self::paxInput('transit_pax_adult', 'Dewasa (Transit)'),
                                 self::paxInput('transit_pax_child', 'Anak-Anak (Transit)'),
@@ -331,7 +339,7 @@ class FlightTrafficResource extends Resource
                     ]),
 
                 // ── Section 4: Muatan Logistik ────────────────────────────────────
-                Forms\Components\Section::make('Muatan Logistik')
+                Section::make('Muatan Logistik')
                     ->description('Data berat muatan dalam satuan kilogram.')
                     ->icon('heroicon-o-scale')
                     ->schema([
@@ -341,7 +349,7 @@ class FlightTrafficResource extends Resource
                     ])->columns(3),
 
                 // ── Section 5: Keterangan ─────────────────────────────────────────
-                Forms\Components\Section::make('Keterangan Tambahan')
+                Section::make('Keterangan Tambahan')
                     ->schema([
                         Forms\Components\Textarea::make('remarks')
                             ->label('Keterangan')
@@ -360,11 +368,6 @@ class FlightTrafficResource extends Resource
 
     public static function table(Table $table): Table
     {
-        $years = array_combine(
-            range(now()->year, 2020),
-            range(now()->year, 2020)
-        );
-
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('schedule_date')
@@ -556,11 +559,11 @@ class FlightTrafficResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('schedule_date', 'desc')
-           ->filters([
+            ->filters([
                 // 1. Filter Tanggal
-                Tables\Filters\Filter::make('schedule_date')
+                Filter::make('schedule_date')
                     ->label('')
-                    ->form([
+                    ->schema([
                         Forms\Components\DatePicker::make('date')
                             ->hiddenLabel()
                             ->placeholder('mm / dd / yyyy')
@@ -623,7 +626,7 @@ class FlightTrafficResource extends Resource
                     ->label('')
                     ->placeholder('Semua Asal')
                     ->native(false)
-                    ->options(fn () => \App\Models\FlightTraffic::query()
+                    ->options(fn () => FlightTraffic::query()
                         ->whereNotNull('origin_iata')
                         ->pluck('origin_iata', 'origin_iata')
                         ->toArray()
@@ -634,30 +637,31 @@ class FlightTrafficResource extends Resource
                     ->label('')
                     ->placeholder('Semua Tujuan')
                     ->native(false)
-                    ->options(fn () => \App\Models\FlightTraffic::query()
+                    ->options(fn () => FlightTraffic::query()
                         ->whereNotNull('destination_iata')
                         ->pluck('destination_iata', 'destination_iata')
                         ->toArray()
                     ),
             ])
             ->filtersLayout(Tables\Enums\FiltersLayout::AboveContent)
+            ->deferFilters(false)
             ->filtersFormColumns([
                 'default' => 1,
                 'sm' => 2,
                 'md' => 4,
                 'xl' => 7,
             ])
-           ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make()->label('Lihat'),
-                    Tables\Actions\EditAction::make()->label('Edit'),
-                    Tables\Actions\DeleteAction::make()->label('Hapus'),
-                    Tables\Actions\RestoreAction::make()->label('Pulihkan'),
-                    Tables\Actions\ForceDeleteAction::make()->label('Hapus Permanen'),
+            ->recordActions([
+                Actions\ActionGroup::make([
+                    Actions\ViewAction::make()->label('Lihat'),
+                    Actions\EditAction::make()->label('Edit'),
+                    Actions\DeleteAction::make()->label('Hapus'),
+                    Actions\RestoreAction::make()->label('Pulihkan'),
+                    Actions\ForceDeleteAction::make()->label('Hapus Permanen'),
                 ]),
             ])
             ->headerActions([
-                Tables\Actions\Action::make('download_template')
+                Actions\Action::make('download_template')
                     ->label('Unduh Template')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('gray')
@@ -666,11 +670,11 @@ class FlightTrafficResource extends Resource
                         'template-import-flight-traffic.xlsx'
                     )),
 
-                Tables\Actions\Action::make('import_excel')
+                Actions\Action::make('import_excel')
                     ->label('Import Excel')
                     ->icon('heroicon-o-arrow-up-tray')
                     ->color('success')
-                    ->form([
+                    ->schema([
                         Forms\Components\FileUpload::make('attachment')
                             ->label('File Excel (.xlsx)')
                             ->disk('local')
@@ -751,11 +755,11 @@ class FlightTrafficResource extends Resource
                     ->modalHeading('Import Data Penerbangan dari Excel')
                     ->modalDescription('Upload file Excel rekap operasional untuk mengimport data secara massal.'),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Hapus Terpilih'),
-                    Tables\Actions\RestoreBulkAction::make()->label('Pulihkan Terpilih'),
-                    Tables\Actions\ForceDeleteBulkAction::make()->label('Hapus Permanen'),
+            ->toolbarActions([
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make()->label('Hapus Terpilih'),
+                    Actions\RestoreBulkAction::make()->label('Pulihkan Terpilih'),
+                    Actions\ForceDeleteBulkAction::make()->label('Hapus Permanen'),
                 ]),
             ])
             ->striped()

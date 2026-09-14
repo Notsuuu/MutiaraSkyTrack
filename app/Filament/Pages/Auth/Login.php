@@ -3,26 +3,32 @@
 namespace App\Filament\Pages\Auth;
 
 use Filament\Actions\Action;
+use Filament\Auth\Pages\Login as BaseLogin;
 use Filament\Forms\Components\Checkbox;
-use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Pages\Auth\Login as BaseLogin;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Schema;
 
 class Login extends BaseLogin
 {
-    protected static string $view = 'filament.pages.auth.login';
+    // Pakai view custom
+    protected string $view = 'filament.pages.auth.login';
 
-    // Menggunakan layout dasar tanpa card pembungkus default Filament
+    // Pakai layout base (tanpa wrapper default Filament)
     protected static string $layout = 'filament-panels::components.layout.base';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 $this->getEmailFormComponent(),
                 $this->getPasswordFormComponent(),
                 $this->getRememberFormComponent(),
+
+                Actions::make([
+                    $this->getAuthenticateFormAction(),
+                ]),
             ])
             ->statePath('data');
     }
@@ -30,19 +36,19 @@ class Login extends BaseLogin
     protected function getEmailFormComponent(): Component
     {
         return TextInput::make('email')
-            ->label('EMAIL PENGGUNA')
+            ->label('Alamat Email')
             ->email()
             ->required()
             ->autocomplete()
             ->autofocus()
-            ->placeholder('admin@skytrack.id')
+            ->placeholder('admin@mutiaraskytrack.id')
             ->prefixIcon('heroicon-m-user');
     }
 
     protected function getPasswordFormComponent(): Component
     {
         return TextInput::make('password')
-            ->label('KATA SANDI')
+            ->label('Kata Sandi')
             ->password()
             ->revealable()
             ->required()
@@ -59,8 +65,10 @@ class Login extends BaseLogin
     protected function getAuthenticateFormAction(): Action
     {
         return Action::make('authenticate')
-            ->label('Masuk ke Sistem')
+            ->label('Masuk Sekarang')
             ->icon('heroicon-m-arrow-right-end-on-rectangle')
-            ->submit('authenticate');
+            ->iconPosition('after')
+            ->submit('authenticate')
+            ->extraAttributes(['class' => 'w-full justify-center']);
     }
 }

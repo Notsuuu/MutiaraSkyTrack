@@ -3,20 +3,27 @@
 namespace App\Filament\Resources\FlightTrafficResource\Pages;
 
 use App\Filament\Resources\FlightTrafficResource;
-use Filament\Resources\Pages\Page;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Concerns\InteractsWithForms;
+use App\Imports\FlightTrafficImport;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Form;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
+use Filament\Resources\Pages\Page;
+use Filament\Schemas\Schema;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
+use Spatie\Activitylog\Models\Activity;
 
 class ImportFlightTraffic extends Page implements HasForms
 {
     use InteractsWithForms;
 
     protected static string $resource = FlightTrafficResource::class;
-    protected static string $view = 'filament.resources.flight-traffic-resource.pages.import-flight-traffic';
-    protected static ?string $title = 'Import Excel - Data Lalu Lintas Udara';
+
+    protected string $view = 'filament.resources.flight-traffic-resource.pages.import-flight-traffic';
 
     public ?array $data = [];
 
@@ -25,10 +32,10 @@ class ImportFlightTraffic extends Page implements HasForms
         $this->form->fill();
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 FileUpload::make('attachment')
                     ->label('Unggah Laporan Lalu Lintas Udara')
                     ->placeholder('Seret & letakkan file Excel di sini atau klik untuk memilih file')
@@ -37,20 +44,102 @@ class ImportFlightTraffic extends Page implements HasForms
                         'application/vnd.ms-excel',
                         'text/csv',
                     ])
-                    ->directory('imports')
-                    ->required(),
+                    ->disk('local')
+                    ->directory('imports/flight-traffic')
+                    ->required()
+                    ->maxSize(10 * 1024)
+                    ->helperText('Format: .xlsx, .xls, atau .csv — maksimal 10MB'),
+
+                Placeholder::make('info')
+                    ->label('')
+                    ->content('File rekap operasional yang sudah dipakai petugas bisa langsung diupload tanpa perlu diubah strukturnya. Maskapai yang belum terdaftar akan otomatis dibuat dan ditandai untuk diverifikasi.'),
             ])
             ->statePath('data');
     }
 
-    public function submit()
+    /**
+     * Riwayat import diambil dari Spatie Activity Log
+     * (setiap kali import sukses, kita catat via activity()).
+     */
+    public function getImportHistory(): Collection
     {
-        $formData = $this->form->getState();
+        return Activity::query()
+            ->where('description', 'Import data penerbangan dari Excel')
+            ->with('causer')
+            ->latest()
+            ->limit(20)
+            ->get();
+    }
 
-        Notification::make()
-            ->title('Proses Import Dimulai')
-            ->body('File berhasil diunggah dan sedang diproses.')
-            ->success()
-            ->send();
+    public function import(): void
+    {
+        $data = $this->form->getState();
+
+        if (empty($data['attachment'])) {
+            Notification::make()
+                ->title('Tidak ada file')
+                ->body('Silakan unggah file Excel terlebih dahulu.')
+                ->warning()
+                ->send();
+
+            return;
+        }
+
+        $filePath = Storage::disk('local')->path($data['attachment']);
+
+        if (! file_exists($filePath)) {
+            $filePath = Storage::disk('public')->path($data['attachment']);
+        }
+
+        try {
+            $import = new FlightTrafficImport();
+            Excel::import($import, $filePath);
+
+            $successCount     = $import->getSuccessCount();
+            $skipCount        = $import->getSkipCount();
+            $failureCount     = count($import->failures());
+            $errorCount       = count($import->errors());
+            $autoCreatedCount = $import->getAutoCreatedAirlineCount();
+            $totalIssues      = $failureCount + $errorCount + $skipCount;
+
+            $message = "Berhasil: {$successCount} baris | Gagal/dilewati: {$totalIssues} baris"
+                . ($autoCreatedCount > 0 ? " | {$autoCreatedCount} maskapai baru otomatis dibuat, perlu diverifikasi." : '');
+
+            Notification::make()
+                ->title($totalIssues > 0 ? 'Import selesai dengan peringatan' : 'Import berhasil!')
+                ->body($message)
+                ->{$totalIssues > 0 ? 'warning' : 'success'}()
+                ->persistent()
+                ->send();
+
+            activity()
+                ->causedBy(Auth::user())
+                ->withProperties([
+                    'success_count'      => $successCount,
+                    'skip_count'         => $totalIssues,
+                    'auto_created_count' => $autoCreatedCount,
+                    'file'               => $data['attachment'],
+                ])
+                ->log('Import data penerbangan dari Excel');
+
+        } catch (\Throwable $e) {
+            Notification::make()
+                ->title('Import gagal!')
+                ->body('Terjadi kesalahan: ' . $e->getMessage())
+                ->danger()
+                ->persistent()
+                ->send();
+        } finally {
+            if (file_exists($filePath)) {
+                @unlink($filePath);
+            }
+        }
+
+        $this->form->fill();
+    }
+
+    public function getTitle(): string
+    {
+        return 'Import Excel';
     }
 }

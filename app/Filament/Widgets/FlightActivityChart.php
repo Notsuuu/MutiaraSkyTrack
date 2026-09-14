@@ -2,33 +2,40 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\FlightTraffic;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
-use App\Models\FlightTraffic;
 
 class FlightActivityChart extends ChartWidget
 {
     use InteractsWithPageFilters;
 
-    protected static ?string $heading = 'Kegiatan Penerbangan';
-    protected int | string | array $columnSpan = 1;
+    protected ?string $heading = 'Kegiatan Penerbangan';
+
+    protected int | string | array $columnSpan = [
+        'default' => 1,
+        'lg'      => 1,
+    ];
 
     protected function getData(): array
     {
         $tahun = $this->filters['tahun'] ?? '2026';
 
-        $types = ['Berjadwal', 'Extra Flight', 'Tidak Berjadwal', 'Bukan Niaga', 'Perintis', 'Haji', 'Militer', 'Lainnya'];
+        $types  = ['Berjadwal', 'Extra Flight', 'Tidak Berjadwal', 'Bukan Niaga', 'Perintis', 'Haji', 'Militer', 'Lainnya'];
         $counts = [];
 
         foreach ($types as $type) {
-            $counts[] = FlightTraffic::whereYear('schedule_date', $tahun)->where('activity_type', $type)->count();
+            $counts[] = FlightTraffic::whereYear('schedule_date', $tahun)
+                ->where('activity_type', $type)
+                ->count();
         }
 
         return [
             'datasets' => [
                 [
-                    'data' => $counts,
+                    'data'            => $counts,
                     'backgroundColor' => ['#10b981', '#06b6d4', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#3b82f6', '#64748b'],
+                    'borderWidth'     => 0,
                 ],
             ],
             'labels' => $types,
@@ -38,5 +45,25 @@ class FlightActivityChart extends ChartWidget
     protected function getType(): string
     {
         return 'doughnut';
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'maintainAspectRatio' => false,
+            'cutout'              => '65%',
+            'plugins' => [
+                'legend' => [
+                    'display'  => true,
+                    'position' => 'bottom',
+                    'labels'   => [
+                        'usePointStyle' => true,
+                        'boxWidth'      => 8,
+                        'padding'       => 14,
+                        'font'          => ['size' => 12],
+                    ],
+                ],
+            ],
+        ];
     }
 }

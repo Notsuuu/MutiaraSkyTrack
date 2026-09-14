@@ -1,0 +1,303 @@
+/* ═══════════════════════════════════════════════════════
+   Mutiara SkyTrack — Login Page Styles
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Reset body & html agar wrapper bisa full width ──── */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: #0b132b !important;
+    overflow-x: hidden;
+}
+
+/* ── Wrapper Utama ──────────────────────────────────── */
+.skytrack-login-wrapper {
+    display: flex;
+    min-height: 100vh;
+    width: 100vw;
+    max-width: 100vw;
+    margin: 0;
+    padding: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #0b132b;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.skytrack-login-wrapper *,
+.skytrack-login-wrapper *::before,
+.skytrack-login-wrapper *::after {
+    box-sizing: border-box;
+}
+
+/* ── Sidebar Kiri ──────────────────────────────────── */
+.skytrack-sidebar {
+    width: 34%;
+    min-width: 380px;
+    max-width: 520px;
+    background-color: #0a1128;
+    color: #ffffff;
+    padding: 2.5rem 2.75rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: 10;
+}
+
+.skytrack-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.skytrack-logo-box {
+    width: 52px;
+    height: 52px;
+    background: #ffffff;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+}
+
+.skytrack-logo-box img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.skytrack-brand-text h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+    color: #ffffff;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+.skytrack-brand-text p {
+    font-size: 0.6rem;
+    color: #475569;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    margin: 4px 0 0 0;
+    text-transform: uppercase;
+}
+
+.skytrack-content-body {
+    margin: auto 0;
+    padding: 1rem 0;
+}
+
+.skytrack-content-body h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 1rem 0;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+}
+
+.skytrack-content-body p.desc {
+    font-size: 0.825rem;
+    color: #94a3b8;
+    line-height: 1.65;
+    margin: 0 0 2rem 0;
+}
+
+.skytrack-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.skytrack-features li {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    line-height: 1.4;
+}
+
+.skytrack-features svg {
+    width: 16px;
+    height: 16px;
+    color: #3b82f6;
+    flex-shrink: 0;
+}
+
+.skytrack-footer {
+    font-size: 0.75rem;
+    color: #3b82f6;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+/* ── Panel Kanan (Background + Form) ────────────────── */
+.skytrack-main-bg {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background-image: var(--skytrack-bg-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-width: 0;
+}
+
+.skytrack-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(10, 17, 40, 0.82) 0%, rgba(10, 17, 40, 0.72) 100%);
+}
+
+.skytrack-card {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 480px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 2.5rem 2.25rem;
+    box-shadow:
+        0 30px 60px -15px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.skytrack-card-header {
+    margin-bottom: 1.75rem;
+}
+
+.skytrack-card-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.4rem 0;
+    letter-spacing: -0.02em;
+}
+
+.skytrack-card-header p {
+    font-size: 0.825rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.skytrack-card-footer {
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #f1f5f9;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    line-height: 1.5;
+}
+
+/* ── Override style Filament untuk card login ───────── */
+.skytrack-card label,
+.skytrack-card .fi-fo-field-wrp-label,
+.skytrack-card .fi-fo-field-wrp-label span {
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.08em !important;
+    color: #475569 !important;
+    text-transform: uppercase !important;
+}
+
+/* ── Override khusus label checkbox agar tidak uppercase ── */
+.skytrack-card label:has(input[type="checkbox"]),
+.skytrack-card .fi-fo-field-wrp:has(input[type="checkbox"]) .fi-fo-field-wrp-label span,
+.skytrack-card .fi-fo-field-wrp:has(input[type="checkbox"]) label {
+    text-transform: none !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 0 !important;
+    color: #475569 !important;
+}
+
+.skytrack-card input[type="email"],
+.skytrack-card input[type="password"],
+.skytrack-card input[type="text"] {
+    border-radius: 10px !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 0.7rem 0.9rem !important;
+    font-size: 0.875rem !important;
+    transition: all 0.15s ease !important;
+}
+
+.skytrack-card input[type="email"]:focus,
+.skytrack-card input[type="password"]:focus,
+.skytrack-card input[type="text"]:focus {
+    border-color: #4f46e5 !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15) !important;
+    outline: none !important;
+}
+
+/* ── Tombol Submit (Indigo / Ungu) ──────────────────── */
+.skytrack-card .fi-btn,
+.skytrack-card button.fi-btn,
+.skytrack-card button[type="submit"] {
+    width: 100% !important;
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    border-radius: 10px !important;
+    padding: 0.8rem 1.25rem !important;
+    transition: all 0.2s ease !important;
+    justify-content: center !important;
+    border: none !important;
+    box-shadow: 0 8px 20px -4px rgba(79, 70, 229, 0.45) !important;
+    letter-spacing: 0.01em !important;
+}
+
+.skytrack-card .fi-btn:hover,
+.skytrack-card button.fi-btn:hover,
+.skytrack-card button[type="submit"]:hover {
+    background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%) !important;
+    box-shadow: 0 10px 24px -4px rgba(79, 70, 229, 0.6) !important;
+    transform: translateY(-1px);
+}
+
+.skytrack-card .fi-btn:active,
+.skytrack-card button[type="submit"]:active {
+    transform: translateY(0);
+}
+
+.skytrack-card input[type="checkbox"] {
+    border-radius: 4px !important;
+}
+
+/* ── Sembunyikan elemen default Filament yang bocor ─── */
+.skytrack-card .fi-simple-header,
+.skytrack-card .fi-fo-actions {
+    display: none;
+}
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width: 1024px) {
+    .skytrack-sidebar {
+        display: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .skytrack-card {
+        padding: 1.75rem 1.5rem;
+        border-radius: 16px;
+    }
+    .skytrack-card-header h2 {
+        font-size: 1.25rem;
+    }
+}

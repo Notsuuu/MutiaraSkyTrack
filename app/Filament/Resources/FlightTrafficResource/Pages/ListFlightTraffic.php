@@ -5,7 +5,7 @@ namespace App\Filament\Resources\FlightTrafficResource\Pages;
 use App\Filament\Resources\FlightTrafficResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Resources\Components\Tab;
+use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListFlightTraffic extends ListRecords
@@ -18,11 +18,6 @@ class ListFlightTraffic extends ListRecords
             Actions\CreateAction::make()
                 ->label('Tambah Data Manual')
                 ->icon('heroicon-o-plus'),
-            Actions\Action::make('importExcel')
-                ->label('Import Excel')
-                ->icon('heroicon-o-arrow-up-tray')
-                ->color('success')
-                ->url(fn () => FlightTrafficResource::getUrl('import')),
         ];
     }
 
@@ -30,10 +25,12 @@ class ListFlightTraffic extends ListRecords
     {
         return [
             'semua' => Tab::make('Semua Penerbangan'),
+
             'domestik' => Tab::make('Domestik')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('coverage', 'DOMESTIK')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('coverage', 'Domestik')),
+
             'internasional' => Tab::make('Internasional')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('coverage', 'INTERNASIONAL')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('coverage', 'Internasional')),
         ];
     }
 }
