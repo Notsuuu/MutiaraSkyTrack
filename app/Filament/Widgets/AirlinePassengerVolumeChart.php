@@ -52,6 +52,11 @@ class AirlinePassengerVolumeChart extends ChartWidget
     {
         return [
             'maintainAspectRatio' => false,
+            // ⚡ ANIMASI: bar tumbuh dari bawah
+            'animation' => [
+                'duration' => 1200,
+                'easing'   => 'easeOutQuart',
+            ],
             'plugins' => [
                 'legend' => ['display' => false],
             ],

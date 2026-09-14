@@ -5,6 +5,9 @@ namespace App\Filament\Resources\FlightTrafficResource\Pages;
 use App\Filament\Resources\FlightTrafficResource;
 use App\Imports\FlightTrafficImport;
 use App\Models\FlightTraffic;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -18,9 +21,10 @@ use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Activitylog\Models\Activity;
 
-class ImportFlightTraffic extends Page implements HasForms
+class ImportFlightTraffic extends Page implements HasForms, HasActions
 {
     use InteractsWithForms;
+    use InteractsWithActions;
 
     protected static string $resource = FlightTrafficResource::class;
 
@@ -66,6 +70,30 @@ class ImportFlightTraffic extends Page implements HasForms
             ->latest()
             ->limit(20)
             ->get();
+    }
+
+    /**
+     * ⚡ ACTION dengan modal konfirmasi custom Filament.
+     * Menggantikan wire:confirm native browser.
+     */
+    public function deleteBatchAction(): Action
+    {
+        return Action::make('deleteBatchAction')
+            ->label('Hapus Batch')
+            ->icon('heroicon-o-trash')
+            ->color('danger')
+            ->requiresConfirmation()
+            ->modalIcon('heroicon-o-exclamation-triangle')
+            ->modalIconColor('danger')
+            ->modalHeading('Hapus Batch Import?')
+            ->modalDescription('Semua data penerbangan dari batch ini akan dihapus PERMANEN dari database. Tindakan ini tidak dapat dibatalkan.')
+            ->modalSubmitActionLabel('Ya, Hapus Permanen')
+            ->modalCancelActionLabel('Batal')
+            ->modalWidth('md')
+            ->action(function (array $arguments) {
+                $activityId = (int) ($arguments['activityId'] ?? 0);
+                $this->deleteBatch($activityId);
+            });
     }
 
     public function import(): void
@@ -138,8 +166,7 @@ class ImportFlightTraffic extends Page implements HasForms
 
     /**
      * Hapus PERMANEN semua data penerbangan dari batch import tertentu.
-     * Karena model FlightTraffic tidak lagi pakai SoftDeletes,
-     * ->delete() = hard delete langsung dari database.
+     * Model FlightTraffic tidak pakai SoftDeletes, jadi ->delete() = hard delete.
      */
     public function deleteBatch(int $activityId): void
     {
@@ -166,7 +193,6 @@ class ImportFlightTraffic extends Page implements HasForms
             return;
         }
 
-        // HARD DELETE — permanen dari database
         $deletedCount = FlightTraffic::where('import_batch_id', $batchId)->delete();
 
         Notification::make()

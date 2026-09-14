@@ -46,6 +46,13 @@ class FlightCoverageChart extends ChartWidget
         return [
             'maintainAspectRatio' => false,
             'cutout'              => '65%',
+            // ⚡ ANIMASI: berputar + membesar dari 0
+            'animation' => [
+                'animateRotate' => true,
+                'animateScale'  => true,
+                'duration'      => 1400,
+                'easing'        => 'easeOutQuart',
+            ],
             'plugins' => [
                 'legend' => [
                     'display'  => true,

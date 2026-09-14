@@ -19,10 +19,10 @@ class FlightMovementChart extends ChartWidget
 
     protected function getData(): array
     {
-        $tahun = $this->filters['tahun'] ?? '2026';
+        $tahun  = $this->filters['tahun'] ?? '2026';
         $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
-        $arrivalData = [];
+        $arrivalData   = [];
         $departureData = [];
 
         for ($m = 1; $m <= 12; $m++) {
@@ -81,6 +81,11 @@ class FlightMovementChart extends ChartWidget
     {
         return [
             'maintainAspectRatio' => false,
+            // ⚡ ANIMASI: garis tergambar dari kiri ke kanan
+            'animation' => [
+                'duration' => 1500,
+                'easing'   => 'easeOutQuart',
+            ],
             'interaction' => [
                 'mode'      => 'index',
                 'intersect' => false,
@@ -125,7 +130,7 @@ class FlightMovementChart extends ChartWidget
                         'color'    => '#94a3b8',
                     ],
                     'grid' => [
-                        'color'     => 'rgba(148, 163, 184, 0.1)',
+                        'color'      => 'rgba(148, 163, 184, 0.1)',
                         'drawBorder' => false,
                     ],
                 ],

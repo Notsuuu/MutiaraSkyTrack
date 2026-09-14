@@ -20,10 +20,10 @@ class PassengerCargoTrendChart extends ChartWidget
 
     protected function getData(): array
     {
-        $tahun = $this->filters['tahun'] ?? '2026';
+        $tahun  = $this->filters['tahun'] ?? '2026';
         $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
-        $paxData = [];
+        $paxData   = [];
         $cargoData = [];
 
         for ($m = 1; $m <= 12; $m++) {
@@ -74,6 +74,11 @@ class PassengerCargoTrendChart extends ChartWidget
     {
         return [
             'maintainAspectRatio' => false,
+            // ⚡ ANIMASI: garis tergambar dari kiri ke kanan
+            'animation' => [
+                'duration' => 1500,
+                'easing'   => 'easeOutQuart',
+            ],
             'plugins' => [
                 'legend' => [
                     'display'  => true,
@@ -97,7 +102,7 @@ class PassengerCargoTrendChart extends ChartWidget
                         'text'    => 'Penumpang (Orang)',
                         'font'    => ['size' => 11],
                     ],
-                    'grid'        => ['color' => 'rgba(0,0,0,0.05)'],
+                    'grid' => ['color' => 'rgba(0,0,0,0.05)'],
                 ],
                 'y1' => [
                     'type'        => 'linear',
@@ -109,7 +114,7 @@ class PassengerCargoTrendChart extends ChartWidget
                         'text'    => 'Kargo (Kg)',
                         'font'    => ['size' => 11],
                     ],
-                    'grid'        => ['drawOnChartArea' => false],
+                    'grid' => ['drawOnChartArea' => false],
                 ],
                 'x' => [
                     'ticks' => ['font' => ['size' => 11]],
