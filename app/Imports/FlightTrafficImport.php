@@ -37,6 +37,10 @@ use Maatwebsite\Excel\Concerns\WithValidation;
  * Kolom "No" dan "Total Pax" diabaikan saat import: "No" hanya nomor urut
  * baris, dan "Total Pax" adalah nilai turunan yang sudah dihitung otomatis
  * oleh accessor FlightTraffic::getTotalPaxAttribute().
+ *
+ * Setiap pemanggilan Import akan menghasilkan UUID batch_id baru. Semua
+ * record yang dihasilkan dari 1 file Excel akan memiliki batch_id yang
+ * sama sehingga bisa dihapus bersama-sama dari halaman Riwayat Import.
  */
 class FlightTrafficImport implements
     ToCollection,
@@ -56,6 +60,14 @@ class FlightTrafficImport implements
 
     /** @var array<string,int> cache nama maskapai (lowercase) → airline_id */
     private array $airlineCache = [];
+
+    /** UUID unik untuk batch import ini — semua record hasil import ini akan memiliki nilai ini */
+    private string $batchId;
+
+    public function __construct()
+    {
+        $this->batchId = (string) Str::uuid();
+    }
 
     public function collection(Collection $rows): void
     {
@@ -85,6 +97,9 @@ class FlightTrafficImport implements
                 $this->assertTotalPaxConsistency($row, $paxAdult, $paxChild, $paxInfant, $rowNumber);
 
                 FlightTraffic::create([
+                    // ⚠️ Batch ID — semua record hasil import ini punya nilai yang sama
+                    'import_batch_id' => $this->batchId,
+
                     'airline_id' => $airline->id,
                     'created_by' => Auth::id(),
 
@@ -211,6 +226,15 @@ class FlightTrafficImport implements
     public function getAutoCreatedAirlineCount(): int
     {
         return $this->autoCreatedAirlineCount;
+    }
+
+    /**
+     * Getter untuk batch ID — dipakai halaman Import untuk mencatat di activity log
+     * dan memungkinkan penghapusan massal berdasarkan batch.
+     */
+    public function getBatchId(): string
+    {
+        return $this->batchId;
     }
 
     // ──────────────────────────────────────

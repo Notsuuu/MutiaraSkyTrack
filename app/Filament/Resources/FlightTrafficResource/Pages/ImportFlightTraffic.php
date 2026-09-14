@@ -4,6 +4,7 @@ namespace App\Filament\Resources\FlightTrafficResource\Pages;
 
 use App\Filament\Resources\FlightTrafficResource;
 use App\Imports\FlightTrafficImport;
+use App\Models\FlightTraffic;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -59,7 +60,6 @@ class ImportFlightTraffic extends Page implements HasForms
 
     /**
      * Riwayat import diambil dari Spatie Activity Log
-     * (setiap kali import sukses, kita catat via activity()).
      */
     public function getImportHistory(): Collection
     {
@@ -81,7 +81,6 @@ class ImportFlightTraffic extends Page implements HasForms
                 ->body('Silakan unggah file Excel terlebih dahulu.')
                 ->warning()
                 ->send();
-
             return;
         }
 
@@ -95,6 +94,7 @@ class ImportFlightTraffic extends Page implements HasForms
             $import = new FlightTrafficImport();
             Excel::import($import, $filePath);
 
+            $batchId          = $import->getBatchId();
             $successCount     = $import->getSuccessCount();
             $skipCount        = $import->getSkipCount();
             $failureCount     = count($import->failures());
@@ -119,6 +119,7 @@ class ImportFlightTraffic extends Page implements HasForms
                     'skip_count'         => $totalIssues,
                     'auto_created_count' => $autoCreatedCount,
                     'file'               => $data['attachment'],
+                    'batch_id'           => $batchId,
                 ])
                 ->log('Import data penerbangan dari Excel');
 
@@ -136,6 +137,54 @@ class ImportFlightTraffic extends Page implements HasForms
         }
 
         $this->form->fill();
+    }
+
+    /**
+     * Hapus semua data penerbangan yang berasal dari batch import tertentu.
+     */
+    public function deleteBatch(int $activityId): void
+    {
+        $activity = Activity::find($activityId);
+
+        if (! $activity || $activity->description !== 'Import data penerbangan dari Excel') {
+            Notification::make()
+                ->title('Data tidak ditemukan')
+                ->body('Batch import yang Anda pilih tidak valid.')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        $batchId = $activity->properties['batch_id'] ?? null;
+
+        if (! $batchId) {
+            Notification::make()
+                ->title('Batch ID tidak ditemukan')
+                ->body('Import ini tidak memiliki batch ID (kemungkinan dari versi lama). Tidak dapat dihapus otomatis.')
+                ->warning()
+                ->persistent()
+                ->send();
+            return;
+        }
+
+        $deletedCount = FlightTraffic::where('import_batch_id', $batchId)->delete();
+
+        Notification::make()
+            ->title('Batch berhasil dihapus')
+            ->body("{$deletedCount} data penerbangan dari batch ini telah dihapus.")
+            ->success()
+            ->send();
+
+        // Hapus record activity agar tidak muncul lagi di riwayat
+        $activity->delete();
+
+        activity()
+            ->causedBy(Auth::user())
+            ->withProperties([
+                'batch_id'      => $batchId,
+                'deleted_count' => $deletedCount,
+            ])
+            ->log('Hapus batch import Excel dari riwayat');
     }
 
     public function getTitle(): string
