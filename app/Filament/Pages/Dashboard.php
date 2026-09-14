@@ -2,25 +2,27 @@
 
 namespace App\Filament\Pages;
 
-use Filament\Pages\Dashboard as BaseDashboard;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Form;
+use Filament\Forms\Components\Select;
+use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
-use Filament\Actions\Action;
+use Filament\Schemas\Schema;
 
 class Dashboard extends BaseDashboard
 {
     use HasFiltersForm;
 
+    // ⚠️ INI YANG SEBELUMNYA LUPA — paksa pakai view custom
+    protected string $view = 'filament.pages.dashboard';
+
     protected static ?string $title = 'Ringkasan Lalu Lintas Udara';
     protected static ?string $navigationLabel = 'Ringkasan Lalu Lintas Udara';
-    protected static ?string $navigationIcon = 'heroicon-o-home';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-home';
 
-    public function filtersForm(Form $form): Form
+    public function filtersForm(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Select::make('bulan')
                     ->options([
                         '01' => 'Januari', '02' => 'Februari', '03' => 'Maret',
@@ -30,7 +32,6 @@ class Dashboard extends BaseDashboard
                     ])
                     ->placeholder('Semua Bulan')
                     ->native(false),
-
                 Select::make('tahun')
                     ->options([
                         '2024' => '2024',
@@ -39,25 +40,11 @@ class Dashboard extends BaseDashboard
                     ])
                     ->default('2026')
                     ->native(false),
-
                 DatePicker::make('tgl')
                     ->label('TGL')
                     ->placeholder('mm / dd / yyyy'),
             ])
             ->columns(3);
-    }
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            Action::make('exportImage')
-                ->label('Ekspor Dashboard ke Gambar')
-                ->icon('heroicon-o-arrow-down-tray')
-                ->color('primary')
-                ->extraAttributes([
-                    'onclick' => 'window.print()',
-                ]),
-        ];
     }
 
     public function getWidgets(): array
@@ -73,8 +60,11 @@ class Dashboard extends BaseDashboard
         ];
     }
 
-    public function getColumns(): int | string | array
+    public function getColumns(): int | array
     {
-        return 2;
+        return [
+            'default' => 1,
+            'lg'      => 2,
+        ];
     }
 }

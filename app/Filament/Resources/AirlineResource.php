@@ -4,23 +4,26 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\AirlineResource\Pages;
 use App\Models\Airline;
+use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use UnitEnum;
 
 class AirlineResource extends Resource
 {
     protected static ?string $model = Airline::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-paper-airplane';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-paper-airplane';
 
     protected static ?string $navigationLabel = 'Master Maskapai';
 
-    protected static ?string $navigationGroup = 'Master Data';
+    protected static string | UnitEnum| null $navigationGroup = 'Master Data';
 
     protected static ?int $navigationSort = 2;
 
@@ -31,26 +34,26 @@ class AirlineResource extends Resource
     protected static ?string $recordTitleAttribute = 'brand_name';
 
     // ──────────────────────────────────────
-    // FORM
+    // FORM (Schema)
     // ──────────────────────────────────────
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Identitas Maskapai')
+        return $schema
+            ->components([
+                Section::make('Identitas Maskapai')
                     ->description('Kode resmi dan nama maskapai.')
                     ->icon('heroicon-o-identification')
                     ->schema([
                         Forms\Components\TextInput::make('icao_code')
                             ->label('Kode ICAO')
-                            ->required()
                             ->maxLength(4)
                             ->minLength(2)
                             ->unique(Airline::class, 'icao_code', ignoreRecord: true)
+                            ->nullable()
                             ->uppercase()
                             ->placeholder('GIA')
-                            ->helperText('3-4 karakter kode ICAO, contoh: GIA, BTK, SJY')
+                            ->helperText('3-4 karakter kode ICAO. Boleh dikosongkan untuk maskapai hasil import otomatis.')
                             ->alphaDash(),
 
                         Forms\Components\TextInput::make('iata_code')
@@ -77,10 +80,16 @@ class AirlineResource extends Resource
                             ->maxLength(255)
                             ->placeholder('PT Garuda Indonesia (Persero) Tbk')
                             ->helperText('Nama perusahaan resmi sesuai legalitas.'),
+
+                        Forms\Components\Toggle::make('is_auto_generated')
+                            ->label('Masih Perlu Verifikasi?')
+                            ->helperText('Otomatis true jika dibuat dari import Excel. Matikan setelah kode ICAO/IATA dilengkapi.')
+                            ->default(false)
+                            ->columnSpanFull(),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Operasional & Cakupan')
+                Section::make('Operasional & Cakupan')
                     ->description('Konfigurasi rute dan status operasional maskapai.')
                     ->icon('heroicon-o-globe-alt')
                     ->schema([
@@ -156,7 +165,8 @@ class AirlineResource extends Resource
                     ->sortable()
                     ->badge()
                     ->color('primary')
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->placeholder('—'),
 
                 Tables\Columns\TextColumn::make('iata_code')
                     ->label('IATA')
@@ -172,8 +182,20 @@ class AirlineResource extends Resource
                     ->weight('semibold')
                     ->description(fn (Airline $record) => $record->operator_name),
 
-                Tables\Columns\BadgeColumn::make('coverage')
+                Tables\Columns\IconColumn::make('is_auto_generated')
+                    ->label('Verifikasi')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-exclamation-triangle')
+                    ->falseIcon('heroicon-o-check-badge')
+                    ->trueColor('warning')
+                    ->falseColor('success')
+                    ->tooltip(fn (Airline $record) => $record->is_auto_generated
+                        ? 'Dibuat otomatis dari import — lengkapi kode ICAO/IATA'
+                        : 'Data terverifikasi'),
+
+                Tables\Columns\TextColumn::make('coverage')
                     ->label('Cakupan')
+                    ->badge()
                     ->formatStateUsing(fn (string $state) => match ($state) {
                         'domestik'      => 'Domestik',
                         'internasional' => 'Internasional',
@@ -190,8 +212,9 @@ class AirlineResource extends Resource
                         default         => null,
                     }),
 
-                Tables\Columns\BadgeColumn::make('operational_status')
+                Tables\Columns\TextColumn::make('operational_status')
                     ->label('Status')
+                    ->badge()
                     ->formatStateUsing(fn (string $state) => match ($state) {
                         'beroperasi' => 'Beroperasi',
                         'tidak'      => 'Tidak Beroperasi',
@@ -242,23 +265,29 @@ class AirlineResource extends Resource
                     ])
                     ->native(false),
 
+                Tables\Filters\TernaryFilter::make('is_auto_generated')
+                    ->label('Perlu Verifikasi (Auto-generated)')
+                    ->trueLabel('Ya, perlu verifikasi')
+                    ->falseLabel('Tidak, sudah terverifikasi')
+                    ->native(false),
+
                 Tables\Filters\TrashedFilter::make()
                     ->label('Tampilkan Dihapus'),
             ])
-            ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make()->label('Lihat'),
-                    Tables\Actions\EditAction::make()->label('Edit'),
-                    Tables\Actions\DeleteAction::make()->label('Hapus'),
-                    Tables\Actions\RestoreAction::make()->label('Pulihkan'),
-                    Tables\Actions\ForceDeleteAction::make()->label('Hapus Permanen'),
+            ->recordActions([
+                Actions\ActionGroup::make([
+                    Actions\ViewAction::make()->label('Lihat'),
+                    Actions\EditAction::make()->label('Edit'),
+                    Actions\DeleteAction::make()->label('Hapus'),
+                    Actions\RestoreAction::make()->label('Pulihkan'),
+                    Actions\ForceDeleteAction::make()->label('Hapus Permanen'),
                 ]),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Hapus Terpilih'),
-                    Tables\Actions\RestoreBulkAction::make()->label('Pulihkan Terpilih'),
-                    Tables\Actions\ForceDeleteBulkAction::make()->label('Hapus Permanen'),
+            ->toolbarActions([
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make()->label('Hapus Terpilih'),
+                    Actions\RestoreBulkAction::make()->label('Pulihkan Terpilih'),
+                    Actions\ForceDeleteBulkAction::make()->label('Hapus Permanen'),
                 ]),
             ])
             ->emptyStateHeading('Belum ada data maskapai')

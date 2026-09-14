@@ -4,26 +4,29 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
+use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use UnitEnum;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
 
     protected static ?string $navigationLabel = 'Kelola Staf';
 
-    protected static ?string $navigationGroup = 'Master Data';
+    protected static string | UnitEnum | null $navigationGroup = 'Master Data';
 
     protected static ?int $navigationSort = 1;
 
@@ -33,21 +36,20 @@ class UserResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    // Hanya admin yang bisa mengakses resource ini
     public static function canAccess(): bool
     {
         return Auth::user()?->isAdmin() ?? false;
     }
 
     // ──────────────────────────────────────
-    // FORM
+    // FORM (Schema)
     // ──────────────────────────────────────
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Informasi Akun')
+        return $schema
+            ->components([
+                Section::make('Informasi Akun')
                     ->description('Data dasar pengguna sistem.')
                     ->icon('heroicon-o-user-circle')
                     ->schema([
@@ -92,7 +94,7 @@ class UserResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Hak Akses & Status')
+                Section::make('Hak Akses & Status')
                     ->description('Konfigurasi peran dan status akun.')
                     ->icon('heroicon-o-shield-check')
                     ->schema([
@@ -130,7 +132,7 @@ class UserResource extends Resource
     }
 
     // ──────────────────────────────────────
-    // TABLE
+    // TABLE (tidak berubah, kecuali BadgeColumn & Actions)
     // ──────────────────────────────────────
 
     public static function table(Table $table): Table
@@ -144,8 +146,9 @@ class UserResource extends Resource
                     ->weight('semibold')
                     ->description(fn (User $record) => $record->email),
 
-                Tables\Columns\BadgeColumn::make('role')
+                Tables\Columns\TextColumn::make('role')
                     ->label('Peran')
+                    ->badge()
                     ->formatStateUsing(fn (string $state) => match ($state) {
                         'admin' => 'Administrator',
                         'staff' => 'Staff',
@@ -162,8 +165,9 @@ class UserResource extends Resource
                         default => 'heroicon-o-question-mark-circle',
                     }),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Status')
+                    ->badge()
                     ->formatStateUsing(fn (string $state) => match ($state) {
                         'aktif'    => 'Aktif',
                         'nonaktif' => 'Nonaktif',
@@ -215,15 +219,15 @@ class UserResource extends Resource
                 Tables\Filters\TrashedFilter::make()
                     ->label('Tampilkan Dihapus'),
             ])
-            ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make()
+            ->recordActions([
+                Actions\ActionGroup::make([
+                    Actions\ViewAction::make()
                         ->label('Lihat'),
 
-                    Tables\Actions\EditAction::make()
+                    Actions\EditAction::make()
                         ->label('Edit'),
 
-                    Tables\Actions\Action::make('toggle_status')
+                    Actions\Action::make('toggle_status')
                         ->label(fn (User $record) => $record->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan')
                         ->icon(fn (User $record) => $record->status === 'aktif' ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
                         ->color(fn (User $record) => $record->status === 'aktif' ? 'danger' : 'success')
@@ -246,29 +250,25 @@ class UserResource extends Resource
                         })
                         ->visible(fn (User $record) => $record->id !== Auth::id()),
 
-                    Tables\Actions\DeleteAction::make()
+                    Actions\DeleteAction::make()
                         ->label('Hapus')
                         ->visible(fn (User $record) => $record->id !== Auth::id()),
 
-                    Tables\Actions\RestoreAction::make()
+                    Actions\RestoreAction::make()
                         ->label('Pulihkan'),
                 ]),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label('Hapus Terpilih'),
-                    Tables\Actions\RestoreBulkAction::make()->label('Pulihkan Terpilih'),
-                    Tables\Actions\ForceDeleteBulkAction::make()->label('Hapus Permanen'),
+            ->toolbarActions([
+                Actions\BulkActionGroup::make([
+                    Actions\DeleteBulkAction::make()->label('Hapus Terpilih'),
+                    Actions\RestoreBulkAction::make()->label('Pulihkan Terpilih'),
+                    Actions\ForceDeleteBulkAction::make()->label('Hapus Permanen'),
                 ]),
             ])
             ->emptyStateHeading('Belum ada pengguna')
             ->emptyStateDescription('Tambahkan pengguna baru dengan menekan tombol di atas.')
             ->emptyStateIcon('heroicon-o-users');
     }
-
-    // ──────────────────────────────────────
-    // PAGES
-    // ──────────────────────────────────────
 
     public static function getRelations(): array
     {

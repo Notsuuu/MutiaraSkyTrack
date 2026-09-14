@@ -2,16 +2,20 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\FlightTraffic;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
-use App\Models\FlightTraffic;
 
 class AirlineFrequencyChart extends ChartWidget
 {
     use InteractsWithPageFilters;
 
-    protected static ?string $heading = 'Frekuensi Penerbangan per Maskapai';
-    protected int | string | array $columnSpan = 1;
+    protected ?string $heading = 'Frekuensi Penerbangan per Maskapai';
+
+    protected int | string | array $columnSpan = [
+        'default' => 1,
+        'lg'      => 1,
+    ];
 
     protected function getData(): array
     {
@@ -21,15 +25,18 @@ class AirlineFrequencyChart extends ChartWidget
             ->whereYear('schedule_date', $tahun)
             ->selectRaw('airline_id, count(*) as total')
             ->groupBy('airline_id')
+            ->orderByDesc('total')
+            ->limit(7)
             ->get();
 
         return [
             'datasets' => [
                 [
-                    'label' => 'Jumlah Flight',
-                    'data' => $data->pluck('total')->toArray(),
+                    'label'           => 'Jumlah Flight',
+                    'data'            => $data->pluck('total')->toArray(),
                     'backgroundColor' => '#6366f1',
-                    'borderRadius' => 4,
+                    'borderRadius'    => 6,
+                    'maxBarThickness' => 48,
                 ],
             ],
             'labels' => $data->map(fn ($item) => $item->airline?->brand_name ?? 'N/A')->toArray(),
@@ -39,5 +46,30 @@ class AirlineFrequencyChart extends ChartWidget
     protected function getType(): string
     {
         return 'bar';
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'maintainAspectRatio' => false,
+            'plugins' => [
+                'legend' => ['display' => false],
+            ],
+            'scales' => [
+                'y' => [
+                    'beginAtZero' => true,
+                    'ticks'       => ['font' => ['size' => 11]],
+                    'grid'        => ['color' => 'rgba(0,0,0,0.05)'],
+                ],
+                'x' => [
+                    'ticks' => [
+                        'font'        => ['size' => 10],
+                        'maxRotation' => 45,
+                        'minRotation' => 45,
+                    ],
+                    'grid' => ['display' => false],
+                ],
+            ],
+        ];
     }
 }
