@@ -14,7 +14,7 @@ class Dashboard extends BaseDashboard
     use HasFiltersForm;
 
     // Kosongkan title properti — akan override via getTitle()
-    protected static ?string $navigationLabel = 'Ringkasan Lalu Lintas Udara';
+    protected static ?string $navigationLabel = 'Dashboard';
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-home';
 
     /**
