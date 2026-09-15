@@ -46,58 +46,121 @@ html.fi,
 }
 
 /* ═══════════════════════════════════════════════════════
-   DASHBOARD ACTIONS — Filter + Tombol Ekspor Sejajar
+   PAGE HEADER — Judul di Kiri, Tombol Ekspor Sejajar Filter
    ═══════════════════════════════════════════════════════ */
 
-.sk-dashboard-actions {
+/* Header normal — title tetap di atas */
+.fi-page .fi-header,
+.fi-page > .fi-header,
+header.fi-header,
+.fi-header {
     display: flex !important;
-    flex-wrap: wrap !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
     align-items: center !important;
     justify-content: space-between !important;
     gap: 1rem !important;
     width: 100% !important;
-    margin-bottom: 1rem !important;
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.25rem !important;
+    margin: 0 !important;
+    min-height: auto !important;
+    height: auto !important;
+    border: none !important;
+    background: transparent !important;
+    overflow: visible !important;
+    position: relative !important;
 }
 
-.sk-dashboard-filters {
+.fi-page .fi-header-main-ctn,
+.fi-page .fi-header-heading-ctn,
+.fi-header .fi-header-main-ctn,
+.fi-header .fi-header-heading-ctn {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
     flex: 1 1 auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
     min-width: 0 !important;
 }
 
-.sk-dashboard-export-wrap {
-    flex: 0 0 auto !important;
-    margin-left: auto !important;
+.fi-page .fi-header-heading,
+.fi-page-header-heading,
+.fi-header-heading,
+h1.fi-header-heading {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    font-size: 1.85rem !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    letter-spacing: -0.025em !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 
-/* Tombol Ekspor */
-.sk-dashboard-export-btn,
-.sk-dashboard-export-wrap .fi-btn,
-.sk-dashboard-export-wrap button {
+/* ⚡ Header actions — position absolute, sejajar dengan filter row */
+.fi-page:has(.sk-stats-grid) .fi-header-actions-ctn,
+.fi-page:has(.sk-stats-grid) .fi-header-actions {
+    position: absolute !important;
+    top: 6rem !important;
+    right: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    z-index: 10 !important;
+    pointer-events: auto !important;
+    flex: 0 0 auto !important;
+}
+
+/* Filter form — beri ruang di kanan untuk tombol ekspor */
+.fi-page:has(.sk-stats-grid) form {
+    padding-right: 250px !important;
+    min-height: 60px !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TOMBOL EKSPOR — Styling Konsisten
+   ═══════════════════════════════════════════════════════ */
+
+.fi-page .fi-header-actions .fi-btn,
+.fi-page .fi-header-actions a.fi-btn,
+.fi-page .fi-header-actions button.fi-btn {
     background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%) !important;
     color: #ffffff !important;
     font-weight: 600 !important;
     border-radius: 10px !important;
     padding: 0.55rem 1.1rem !important;
-    font-size: 0.82rem !important;
+    font-size: 0.85rem !important;
     box-shadow: 0 4px 12px -2px rgba(79, 70, 229, 0.5) !important;
     border: none !important;
     display: inline-flex !important;
     align-items: center !important;
     gap: 0.5rem !important;
+    transition: all 0.2s ease !important;
     white-space: nowrap !important;
 }
 
-.sk-dashboard-export-btn:hover,
-.sk-dashboard-export-wrap .fi-btn:hover,
-.sk-dashboard-export-wrap button:hover {
+.fi-page .fi-header-actions .fi-btn:hover,
+.fi-page .fi-header-actions a.fi-btn:hover,
+.fi-page .fi-header-actions button.fi-btn:hover {
     background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%) !important;
     box-shadow: 0 6px 16px -2px rgba(79, 70, 229, 0.65) !important;
     transform: translateY(-1px);
 }
 
-/* Icon tombol — paksa ukuran wajar */
-.sk-dashboard-export-wrap svg,
-.sk-dashboard-export-btn svg {
+.fi-page .fi-header-actions .fi-btn svg,
+.fi-page .fi-header-actions a.fi-btn svg,
+.fi-page .fi-header-actions button.fi-btn svg {
     width: 18px !important;
     height: 18px !important;
     max-width: 18px !important;
@@ -105,52 +168,44 @@ html.fi,
     flex-shrink: 0 !important;
 }
 
-@media (max-width: 768px) {
-    .sk-dashboard-actions {
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-    .sk-dashboard-export-wrap {
-        margin-left: 0 !important;
-    }
-}
-
 /* ═══════════════════════════════════════════════════════
-   COMPACT FILTER ROW — Inside Dashboard Filters
+   COMPACT FILTER ROW — Dashboard Only
    ═══════════════════════════════════════════════════════ */
 
-.sk-dashboard-filters form,
-.sk-dashboard-filters .fi-fo-component-ctn,
-.sk-dashboard-filters .fi-sc,
-.sk-dashboard-filters .fi-sc-component {
+.fi-page:has(.sk-stats-grid) form,
+.fi-page:has(.sk-stats-grid) .fi-fo-component-ctn,
+.fi-page:has(.sk-stats-grid) .fi-sc,
+.fi-page:has(.sk-stats-grid) .fi-sc-component {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     margin-top: 0 !important;
-    margin-bottom: 0 !important;
+    margin-bottom: 1rem !important;
     gap: 0.5rem 0.75rem !important;
+    row-gap: 0.5rem !important;
+    column-gap: 0.75rem !important;
 }
 
-.sk-dashboard-filters .fi-fo,
-.sk-dashboard-filters .fi-fo-component-ctn > div,
-.sk-dashboard-filters .fi-fo-component-ctn > .fi-fo {
+.fi-page:has(.sk-stats-grid) .fi-fo,
+.fi-page:has(.sk-stats-grid) .fi-fo-component-ctn > div,
+.fi-page:has(.sk-stats-grid) .fi-fo-component-ctn > .fi-fo {
     display: flex !important;
     flex-wrap: wrap !important;
     align-items: center !important;
     gap: 0.75rem !important;
     column-gap: 0.75rem !important;
     row-gap: 0.5rem !important;
-    margin: 0 !important;
+    margin-top: 0 !important;
     grid-template-columns: none !important;
 }
 
-.sk-dashboard-filters .fi-grid-col {
+.fi-page:has(.sk-stats-grid) .fi-grid-col {
     flex: 0 0 auto !important;
     width: auto !important;
     max-width: none !important;
     min-width: 0 !important;
 }
 
-.sk-dashboard-filters .fi-fo-field {
+.fi-page:has(.sk-stats-grid) .fi-fo-field {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
@@ -159,8 +214,8 @@ html.fi,
     width: auto !important;
 }
 
-.sk-dashboard-filters .fi-fo-field-label-col,
-.sk-dashboard-filters .fi-fo-field-label-ctn {
+.fi-page:has(.sk-stats-grid) .fi-fo-field-label-col,
+.fi-page:has(.sk-stats-grid) .fi-fo-field-label-ctn {
     width: auto !important;
     flex: 0 0 auto !important;
     margin: 0 !important;
@@ -168,12 +223,12 @@ html.fi,
     padding-right: 0.4rem !important;
 }
 
-.sk-dashboard-filters .fi-fo-field-wrp-label {
+.fi-page:has(.sk-stats-grid) .fi-fo-field-wrp-label {
     margin-bottom: 0 !important;
 }
 
-.sk-dashboard-filters .fi-fo-field-label-content,
-.sk-dashboard-filters .fi-fo-field-label-content span {
+.fi-page:has(.sk-stats-grid) .fi-fo-field-label-content,
+.fi-page:has(.sk-stats-grid) .fi-fo-field-label-content span {
     font-size: 0.72rem !important;
     font-weight: 700 !important;
     text-transform: uppercase !important;
@@ -182,18 +237,18 @@ html.fi,
     white-space: nowrap !important;
 }
 
-.sk-dashboard-filters .fi-fo-field-content-col {
+.fi-page:has(.sk-stats-grid) .fi-fo-field-content-col {
     flex: 0 0 auto !important;
     width: auto !important;
     min-width: 175px !important;
     max-width: 200px !important;
 }
 
-.sk-dashboard-filters .fi-input,
-.sk-dashboard-filters .fi-input-wrp,
-.sk-dashboard-filters .fi-fo-select-trigger,
-.sk-dashboard-filters input[type="text"],
-.sk-dashboard-filters input[type="date"] {
+.fi-page:has(.sk-stats-grid) .fi-input,
+.fi-page:has(.sk-stats-grid) .fi-input-wrp,
+.fi-page:has(.sk-stats-grid) .fi-fo-select-trigger,
+.fi-page:has(.sk-stats-grid) input[type="text"],
+.fi-page:has(.sk-stats-grid) input[type="date"] {
     font-size: 0.85rem !important;
     min-height: 38px !important;
     padding: 0.4rem 0.75rem !important;
@@ -201,11 +256,37 @@ html.fi,
 }
 
 /* ═══════════════════════════════════════════════════════
-   HIDE DEFAULT HEADER
+   FIX SPACING
    ═══════════════════════════════════════════════════════ */
 
-.fi-page:has(.sk-dashboard-actions) .fi-header {
-    display: none !important;
+.fi-page:has(.sk-stats-grid) > div,
+.fi-page:has(.sk-stats-grid) .fi-page-content > div,
+.fi-page:has(.sk-stats-grid) .fi-page-content > section {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    gap: 0.5rem !important;
+}
+
+.fi-page:has(.sk-stats-grid) .sk-stats-grid {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+.fi-page:has(.sk-stats-grid) .fi-dashboard,
+.fi-page:has(.sk-stats-grid) .fi-dashboard > div,
+.fi-page:has(.sk-stats-grid) .fi-wi-widgets,
+.fi-page:has(.sk-stats-grid) .fi-wi-widgets > div {
+    row-gap: 1rem !important;
+    gap: 1rem !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+.fi-page:has(.sk-stats-grid) .fi-wi {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -439,7 +520,7 @@ body .fi-sidebar-header,
     font-size: 0.9rem !important;
 }
 
-/* MENU ITEM AKTIF */
+/* MENU ITEM AKTIF — SKY BLUE */
 .fi-sidebar .fi-sidebar-item-active > .fi-sidebar-item-button,
 .fi-sidebar .fi-sidebar-item-active .fi-sidebar-item-button,
 .fi-sidebar .fi-sidebar-item.fi-active > .fi-sidebar-item-button,
@@ -763,7 +844,6 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
     animation: sk-chart-fade-in 0.6s ease-out backwards;
 }
 
-/* Stagger — beri delay antar chart */
 .fi-wi-chart:nth-of-type(1) { animation-delay: 0.05s; }
 .fi-wi-chart:nth-of-type(2) { animation-delay: 0.15s; }
 .fi-wi-chart:nth-of-type(3) { animation-delay: 0.25s; }
@@ -772,7 +852,6 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
 .fi-wi-chart:nth-of-type(6) { animation-delay: 0.55s; }
 .fi-wi-chart:nth-of-type(7) { animation-delay: 0.65s; }
 
-/* Stat cards — fade in juga */
 .sk-stat-card {
     animation: sk-chart-fade-in 0.5s ease-out backwards;
 }

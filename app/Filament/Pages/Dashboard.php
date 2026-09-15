@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Pages\Dashboard as BaseDashboard;
@@ -12,12 +13,17 @@ class Dashboard extends BaseDashboard
 {
     use HasFiltersForm;
 
-    // ⚠️ INI YANG SEBELUMNYA LUPA — paksa pakai view custom
-    protected string $view = 'filament.pages.dashboard';
-
-    protected static ?string $title = 'Dashboard';
-    protected static ?string $navigationLabel = 'Dashboard';
+    // Kosongkan title properti — akan override via getTitle()
+    protected static ?string $navigationLabel = 'Ringkasan Lalu Lintas Udara';
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-home';
+
+    /**
+     * Override getTitle() — lebih reliable daripada $title property di Dashboard.
+     */
+    public function getTitle(): string
+    {
+        return 'Ringkasan Lalu Lintas Udara';
+    }
 
     public function filtersForm(Schema $schema): Schema
     {
@@ -45,6 +51,17 @@ class Dashboard extends BaseDashboard
                     ->placeholder('mm / dd / yyyy'),
             ])
             ->columns(3);
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('exportImage')
+                ->label('Ekspor Dashboard ke Gambar')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('primary')
+                ->extraAttributes(['onclick' => 'window.print()']),
+        ];
     }
 
     public function getWidgets(): array

@@ -17,6 +17,8 @@ class FlightMovementChart extends ChartWidget
         'lg'      => 2,
     ];
 
+    protected string $view = 'filament.widgets.animated-chart';
+
     protected function getData(): array
     {
         $tahun  = $this->filters['tahun'] ?? '2026';
@@ -80,8 +82,6 @@ class FlightMovementChart extends ChartWidget
     protected function getOptions(): array
     {
         return [
-            'maintainAspectRatio' => false,
-            // ⚡ ANIMASI: garis tergambar dari kiri ke kanan
             'animation' => [
                 'duration' => 1500,
                 'easing'   => 'easeOutQuart',

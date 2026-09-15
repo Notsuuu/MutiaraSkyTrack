@@ -17,6 +17,8 @@ class AirlineFrequencyChart extends ChartWidget
         'lg'      => 1,
     ];
 
+    protected string $view = 'filament.widgets.animated-chart';
+
     protected function getData(): array
     {
         $tahun = $this->filters['tahun'] ?? '2026';
@@ -51,8 +53,6 @@ class AirlineFrequencyChart extends ChartWidget
     protected function getOptions(): array
     {
         return [
-            'maintainAspectRatio' => false,
-            // ⚡ ANIMASI: bar tumbuh dari bawah
             'animation' => [
                 'duration' => 1200,
                 'easing'   => 'easeOutQuart',

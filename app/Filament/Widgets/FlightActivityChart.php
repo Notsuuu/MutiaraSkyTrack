@@ -17,6 +17,8 @@ class FlightActivityChart extends ChartWidget
         'lg'      => 1,
     ];
 
+    protected string $view = 'filament.widgets.animated-chart';
+
     protected function getData(): array
     {
         $tahun = $this->filters['tahun'] ?? '2026';
@@ -36,6 +38,7 @@ class FlightActivityChart extends ChartWidget
                     'data'            => $counts,
                     'backgroundColor' => ['#10b981', '#06b6d4', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#3b82f6', '#64748b'],
                     'borderWidth'     => 0,
+                    'hoverOffset'     => 6,
                 ],
             ],
             'labels' => $types,
@@ -50,8 +53,13 @@ class FlightActivityChart extends ChartWidget
     protected function getOptions(): array
     {
         return [
-            'maintainAspectRatio' => false,
-            'cutout'              => '65%',
+            'cutout' => '65%',
+            'animation' => [
+                'animateRotate' => true,
+                'animateScale'  => true,
+                'duration'      => 1600,
+                'easing'        => 'easeOutQuart',
+            ],
             'plugins' => [
                 'legend' => [
                     'display'  => true,
@@ -67,4 +75,3 @@ class FlightActivityChart extends ChartWidget
         ];
     }
 }
-

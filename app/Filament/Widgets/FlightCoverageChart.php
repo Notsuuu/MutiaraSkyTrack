@@ -17,6 +17,8 @@ class FlightCoverageChart extends ChartWidget
         'lg'      => 1,
     ];
 
+    protected string $view = 'filament.widgets.animated-chart';
+
     protected function getData(): array
     {
         $tahun = $this->filters['tahun'] ?? '2026';
@@ -30,6 +32,7 @@ class FlightCoverageChart extends ChartWidget
                     'data'            => [$domestik, $internasional],
                     'backgroundColor' => ['#6366f1', '#38bdf8'],
                     'borderWidth'     => 0,
+                    'hoverOffset'     => 6,
                 ],
             ],
             'labels' => ['Domestik', 'Internasional'],
@@ -44,13 +47,11 @@ class FlightCoverageChart extends ChartWidget
     protected function getOptions(): array
     {
         return [
-            'maintainAspectRatio' => false,
-            'cutout'              => '65%',
-            // ⚡ ANIMASI: berputar + membesar dari 0
+            'cutout' => '65%',
             'animation' => [
                 'animateRotate' => true,
                 'animateScale'  => true,
-                'duration'      => 1400,
+                'duration'      => 1600,
                 'easing'        => 'easeOutQuart',
             ],
             'plugins' => [

@@ -12,9 +12,4 @@
 
     {{-- Divider --}}
     <div class="sk-topbar-divider"></div>
-
-    {{-- Judul Halaman --}}
-    <div class="sk-topbar-page-title">
-        Ringkasan Lalu Lintas Udara
-    </div>
 </div>
