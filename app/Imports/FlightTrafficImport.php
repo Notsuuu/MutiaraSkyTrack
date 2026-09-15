@@ -24,21 +24,7 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 /**
  * Import data lalu lintas penerbangan dari file rekap operasional PLW.
  *
- * Header asli pada baris pertama file .xlsx (urutan fisik kolom TIDAK
- * berpengaruh karena Laravel Excel membaca berdasarkan NAMA header):
- *
- * No | Tgl Aktual | Waktu Aktual | Tgl Jadwal | Waktu Jadwal |
- * Operator / Maskapai | No. Penerbangan | Registrasi | Tipe Armada |
- * Kapasitas | Asal | Tujuan | Pergerakan | Kegiatan | Cakupan | Status |
- * Kategori Delay | Keterangan Delay | Pax Dewasa | Pax Anak | Pax Bayi |
- * Total Pax | Transit Dewasa | Transit Anak | Transit Bayi |
- * Bagasi (Kg) | Kargo (Kg) | Pos (Kg)
- *
- * Kolom "No" dan "Total Pax" diabaikan saat import.
- *
- * Setiap pemanggilan Import akan menghasilkan UUID batch_id baru. Semua
- * record yang dihasilkan dari 1 file Excel memiliki batch_id yang sama
- * sehingga bisa dihapus bersama-sama dari halaman Riwayat Import.
+ * Setiap pemanggilan Import akan menghasilkan UUID batch_id baru.
  */
 class FlightTrafficImport implements
     ToCollection,
@@ -73,11 +59,9 @@ class FlightTrafficImport implements
     public function collection(Collection $rows): void
     {
         // Disable Spatie Activity Log per-record selama import massal.
-        // Cegah 1000 activity_log entries saat import 1000 baris.
-        // Ringkasan tetap dicatat oleh halaman Import via activity() manual.
         activity()->withoutLogs(function () use ($rows) {
             foreach ($rows as $index => $row) {
-                $rowNumber = $index + 2; // +2: heading row + index 0-based
+                $rowNumber = $index + 2;
 
                 try {
                     $airline = $this->resolveOrCreateAirline($row['operator_maskapai'] ?? null);
@@ -117,8 +101,12 @@ class FlightTrafficImport implements
                         'actual_time'   => $actualTime,
 
                         'flight_number'         => strtoupper(trim((string) ($row['no_penerbangan'] ?? ''))),
-                        'aircraft_type'         => strtoupper(trim((string) ($row['tipe_armada'] ?? ''))),
-                        'aircraft_registration' => strtoupper(trim((string) ($row['registrasi'] ?? ''))),
+                        'aircraft_type'         => filled($row['tipe_armada'] ?? null)
+                            ? strtoupper(trim((string) $row['tipe_armada']))
+                            : null,
+                        'aircraft_registration' => filled($row['registrasi'] ?? null)
+                            ? strtoupper(trim((string) $row['registrasi']))
+                            : null,
                         'seat_capacity'         => (int) ($row['kapasitas'] ?? 0),
 
                         'flight_status' => $this->normalizeStatus((string) ($row['status'] ?? '')),
@@ -171,7 +159,7 @@ class FlightTrafficImport implements
             'tgl_jadwal'        => ['required'],
             'operator_maskapai' => ['required', 'string', 'max:255'],
             'no_penerbangan'    => ['required'],
-            'tipe_armada'       => ['required', 'string', 'max:20'],
+            'tipe_armada'       => ['nullable', 'string', 'max:20'],
             'asal'              => ['required', 'string', 'max:20'],
             'tujuan'            => ['required', 'string', 'max:20'],
             'pergerakan'        => ['required'],
@@ -222,7 +210,7 @@ class FlightTrafficImport implements
     }
 
     // ──────────────────────────────────────
-    // Getters untuk Ringkasan Import
+    // Getters
     // ──────────────────────────────────────
 
     public function getSuccessCount(): int
@@ -240,19 +228,12 @@ class FlightTrafficImport implements
         return $this->autoCreatedAirlineCount;
     }
 
-    /**
-     * UUID batch import ini. Dipakai halaman Import untuk dicatat di activity log
-     * dan memungkinkan penghapusan massal berdasarkan batch.
-     */
     public function getBatchId(): string
     {
         return $this->batchId;
     }
 
     /**
-     * Detail error per baris. Berguna untuk menampilkan warning yang informatif
-     * ke user: "Baris 15: nama maskapai kosong", dst.
-     *
      * @return array<int, array{row:int, message:string}>
      */
     public function getRowErrors(): array
@@ -264,14 +245,6 @@ class FlightTrafficImport implements
     // Resolusi / Auto-create Maskapai
     // ──────────────────────────────────────
 
-    /**
-     * File rekap PLW hanya mencantumkan NAMA maskapai (bukan kode ICAO/IATA),
-     * misalnya "Lion Air", "Batik Air", "Garuda Indonesia", "Susi Air",
-     * "Intan Angkasa", "Express Air". Dicocokkan case-insensitive terhadap
-     * brand_name; jika tidak ditemukan, buat record baru dengan flag
-     * is_auto_generated = true agar admin bisa melengkapi kode ICAO/IATA
-     * kemudian melalui menu Master Maskapai.
-     */
     private function resolveOrCreateAirline(?string $name): ?Airline
     {
         $name = trim((string) $name);
@@ -363,10 +336,6 @@ class FlightTrafficImport implements
         }
     }
 
-    /**
-     * Status pada file sumber: "REALISASI" (terlaksana sesuai rencana),
-     * "DELAY" (mengalami keterlambatan), atau "BATAL"/"CANCEL" (dibatalkan).
-     */
     private function normalizeStatus(string $value): string
     {
         return match (Str::lower(trim($value))) {
@@ -377,9 +346,6 @@ class FlightTrafficImport implements
         };
     }
 
-    /**
-     * Kegiatan pada file sumber: "BERJADWAL", "PERINTIS", "TIDAK BERJADWAL", dst.
-     */
     private function normalizeActivity(string $value): string
     {
         $normalized = Str::lower(trim($value));
@@ -406,10 +372,6 @@ class FlightTrafficImport implements
         };
     }
 
-    /**
-     * Pergerakan pada file sumber memakai kode singkat: "D" (Departure/
-     * Berangkat) dan "A" (Arrival/Datang).
-     */
     private function normalizeMovement(string $value): string
     {
         return match (Str::lower(trim($value))) {
@@ -419,11 +381,6 @@ class FlightTrafficImport implements
         };
     }
 
-    /**
-     * Bandingkan kolom "Total Pax" dari file sumber (jika ada) dengan
-     * hasil penjumlahan dewasa+anak+bayi. Hanya untuk logging peringatan,
-     * TIDAK menggagalkan proses import.
-     */
     private function assertTotalPaxConsistency(
         $row,
         int $paxAdult,

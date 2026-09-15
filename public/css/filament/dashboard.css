@@ -46,10 +46,9 @@ html.fi,
 }
 
 /* ═══════════════════════════════════════════════════════
-   PAGE HEADER — Judul di Kiri, Tombol Ekspor Sejajar Filter
+   PAGE HEADER — Judul Kiri, Tombol Ekspor Sejajar Filter
    ═══════════════════════════════════════════════════════ */
 
-/* Header normal — title tetap di atas */
 .fi-page .fi-header,
 .fi-page > .fi-header,
 header.fi-header,
@@ -86,6 +85,7 @@ header.fi-header,
     min-width: 0 !important;
 }
 
+/* Judul — LIGHT MODE */
 .fi-page .fi-header-heading,
 .fi-page-header-heading,
 .fi-header-heading,
@@ -105,11 +105,34 @@ h1.fi-header-heading {
     text-overflow: ellipsis !important;
 }
 
-/* ⚡ Header actions — position absolute, sejajar dengan filter row */
+/* ⚡ Judul — DARK MODE */
+.dark .fi-page .fi-header-heading,
+.dark .fi-page-header-heading,
+.dark .fi-header-heading,
+.dark h1.fi-header-heading {
+    color: #f1f5f9 !important;
+}
+
+/* ⚡ Breadcrumb — DARK MODE */
+.dark .fi-page .fi-breadcrumbs,
+.dark .fi-page .fi-header .fi-breadcrumbs,
+.dark .fi-breadcrumbs {
+    color: #64748b !important;
+}
+
+.dark .fi-breadcrumbs a {
+    color: #94a3b8 !important;
+}
+
+.dark .fi-breadcrumbs a:hover {
+    color: #e2e8f0 !important;
+}
+
+/* Header actions — absolut sejajar filter */
 .fi-page:has(.sk-stats-grid) .fi-header-actions-ctn,
 .fi-page:has(.sk-stats-grid) .fi-header-actions {
     position: absolute !important;
-    top: 6rem !important;
+    top: 6.75rem !important;
     right: 0 !important;
     padding: 0 !important;
     margin: 0 !important;
@@ -122,14 +145,13 @@ h1.fi-header-heading {
     flex: 0 0 auto !important;
 }
 
-/* Filter form — beri ruang di kanan untuk tombol ekspor */
 .fi-page:has(.sk-stats-grid) form {
     padding-right: 250px !important;
     min-height: 60px !important;
 }
 
 /* ═══════════════════════════════════════════════════════
-   TOMBOL EKSPOR — Styling Konsisten
+   TOMBOL EKSPOR
    ═══════════════════════════════════════════════════════ */
 
 .fi-page .fi-header-actions .fi-btn,
@@ -227,6 +249,7 @@ h1.fi-header-heading {
     margin-bottom: 0 !important;
 }
 
+/* Filter label — LIGHT MODE */
 .fi-page:has(.sk-stats-grid) .fi-fo-field-label-content,
 .fi-page:has(.sk-stats-grid) .fi-fo-field-label-content span {
     font-size: 0.72rem !important;
@@ -235,6 +258,18 @@ h1.fi-header-heading {
     letter-spacing: 0.08em !important;
     color: #475569 !important;
     white-space: nowrap !important;
+}
+
+/* ⚡ Filter label — DARK MODE */
+.dark .fi-page:has(.sk-stats-grid) .fi-fo-field-label-content,
+.dark .fi-page:has(.sk-stats-grid) .fi-fo-field-label-content span {
+    color: #94a3b8 !important;
+}
+
+/* ⚡ Filter placeholder — DARK MODE */
+.dark .fi-page:has(.sk-stats-grid) .fi-input::placeholder,
+.dark .fi-page:has(.sk-stats-grid) input::placeholder {
+    color: #64748b !important;
 }
 
 .fi-page:has(.sk-stats-grid) .fi-fo-field-content-col {
@@ -290,7 +325,7 @@ h1.fi-header-heading {
 }
 
 /* ═══════════════════════════════════════════════════════
-   TOPBAR
+   TOPBAR — Dark Navy
    ═══════════════════════════════════════════════════════ */
 
 .fi-topbar {
@@ -449,7 +484,7 @@ h1.fi-header-heading {
 }
 
 /* ═══════════════════════════════════════════════════════
-   SIDEBAR
+   SIDEBAR — Dark Navy
    ═══════════════════════════════════════════════════════ */
 
 body .fi-sidebar,
@@ -659,6 +694,7 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
     min-width: 0;
 }
 
+/* Label — LIGHT MODE */
 .sk-stat-label {
     font-size: 0.75rem;
     font-weight: 700;
@@ -671,8 +707,12 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
     text-overflow: ellipsis;
 }
 
-.dark .sk-stat-label { color: #94a3b8; }
+/* ⚡ Label — DARK MODE */
+.dark .sk-stat-label {
+    color: #94a3b8;
+}
 
+/* Value — LIGHT MODE */
 .sk-stat-value {
     font-size: 2.35rem;
     font-weight: 700;
@@ -687,8 +727,12 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
     margin-bottom: 0;
 }
 
-.dark .sk-stat-value { color: #f1f5f9; }
+/* ⚡ Value — DARK MODE */
+.dark .sk-stat-value {
+    color: #f1f5f9;
+}
 
+/* Desc — LIGHT MODE */
 .sk-stat-desc {
     display: flex;
     align-items: center;
@@ -696,6 +740,11 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
     font-size: 0.85rem;
     color: #64748b;
     flex-wrap: wrap;
+}
+
+/* ⚡ Desc — DARK MODE */
+.dark .sk-stat-desc {
+    color: #94a3b8;
 }
 
 .sk-stat-unit {
@@ -719,6 +768,8 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
 .sk-stat-percent-rose    { color: #e11d48; }
 .sk-stat-percent-slate   { color: #64748b; }
 .sk-stat-percent-emerald { color: #059669; }
+
+.dark .sk-stat-percent-slate { color: #94a3b8; }
 
 .sk-stat-icon-box {
     flex-shrink: 0;
@@ -780,6 +831,7 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
     border-color: #1e293b;
 }
 
+/* Chart heading — LIGHT MODE */
 .fi-wi-chart .fi-wi-chart-heading,
 .fi-wi-chart .fi-section-header-heading {
     font-size: 0.95rem;
@@ -788,41 +840,24 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
     margin-bottom: 0.75rem;
 }
 
+/* ⚡ Chart heading — DARK MODE */
 .dark .fi-wi-chart .fi-wi-chart-heading,
 .dark .fi-wi-chart .fi-section-header-heading {
     color: #f1f5f9;
 }
 
-.fi-wi-chart,
-.fi-wi-chart > div,
-.fi-wi-chart .fi-section,
-.fi-wi-chart .fi-section-content-ctn,
-.fi-wi-chart .fi-section-content {
-    min-height: 0 !important;
-    height: auto !important;
-}
-
-.fi-wi-chart [wire\:ignore] {
-    position: relative !important;
+/* Chart canvas wrapper — support struktur custom */
+.fi-wi-chart [x-data*="skyChart"] {
     height: 280px !important;
-    min-height: 280px !important;
-    max-height: 280px !important;
-    display: block !important;
+    position: relative !important;
+    width: 100% !important;
 }
 
 .fi-wi-chart canvas {
     display: block !important;
-    height: 100% !important;
-    max-height: 100% !important;
+    max-height: 280px !important;
     width: 100% !important;
     aspect-ratio: unset !important;
-}
-
-.fi-wi-chart:has(canvas[data-type="doughnut"]) [wire\:ignore],
-.fi-wi-chart:has(canvas[data-type="pie"]) [wire\:ignore] {
-    height: 240px !important;
-    min-height: 240px !important;
-    max-height: 240px !important;
 }
 
 /* ═══════════════════════════════════════════════════════
