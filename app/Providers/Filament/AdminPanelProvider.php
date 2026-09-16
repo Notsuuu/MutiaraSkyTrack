@@ -51,6 +51,10 @@ class AdminPanelProvider extends PanelProvider
                 fn (): string => '<link rel="stylesheet" href="' . asset('css/filament/dashboard.css') . '?v=' . (file_exists(public_path('css/filament/dashboard.css')) ? filemtime(public_path('css/filament/dashboard.css')) : time()) . '">',
             )
             ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): string => Blade::render("@vite('resources/js/filament.js')"),  // ← BARU: load Vite bundle Filament
+            )
+            ->renderHook(
                 PanelsRenderHook::TOPBAR_START,
                 fn (): string => Blade::render('@include("filament.components.topbar-brand")'),
             )

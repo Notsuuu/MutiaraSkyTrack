@@ -28,7 +28,7 @@ class UserResource extends Resource
 
     protected static string | UnitEnum | null $navigationGroup = 'Master Data';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 20;
 
     protected static ?string $modelLabel = 'Pengguna';
 
@@ -40,10 +40,6 @@ class UserResource extends Resource
     {
         return Auth::user()?->isAdmin() ?? false;
     }
-
-    // ──────────────────────────────────────
-    // FORM (Schema)
-    // ──────────────────────────────────────
 
     public static function form(Schema $schema): Schema
     {
@@ -131,10 +127,6 @@ class UserResource extends Resource
             ]);
     }
 
-    // ──────────────────────────────────────
-    // TABLE (tidak berubah, kecuali BadgeColumn & Actions)
-    // ──────────────────────────────────────
-
     public static function table(Table $table): Table
     {
         return $table
@@ -221,11 +213,8 @@ class UserResource extends Resource
             ])
             ->recordActions([
                 Actions\ActionGroup::make([
-                    Actions\ViewAction::make()
-                        ->label('Lihat'),
-
-                    Actions\EditAction::make()
-                        ->label('Edit'),
+                    Actions\ViewAction::make()->label('Lihat'),
+                    Actions\EditAction::make()->label('Edit'),
 
                     Actions\Action::make('toggle_status')
                         ->label(fn (User $record) => $record->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan')
@@ -254,8 +243,7 @@ class UserResource extends Resource
                         ->label('Hapus')
                         ->visible(fn (User $record) => $record->id !== Auth::id()),
 
-                    Actions\RestoreAction::make()
-                        ->label('Pulihkan'),
+                    Actions\RestoreAction::make()->label('Pulihkan'),
                 ]),
             ])
             ->toolbarActions([

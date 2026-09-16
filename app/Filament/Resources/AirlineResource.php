@@ -23,19 +23,15 @@ class AirlineResource extends Resource
 
     protected static ?string $navigationLabel = 'Master Maskapai';
 
-    protected static string | UnitEnum| null $navigationGroup = 'Master Data';
+    protected static string | UnitEnum | null $navigationGroup = 'Master Data';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 21;
 
     protected static ?string $modelLabel = 'Maskapai';
 
     protected static ?string $pluralModelLabel = 'Maskapai';
 
     protected static ?string $recordTitleAttribute = 'brand_name';
-
-    // ──────────────────────────────────────
-    // FORM (Schema)
-    // ──────────────────────────────────────
 
     public static function form(Schema $schema): Schema
     {
@@ -150,10 +146,6 @@ class AirlineResource extends Resource
                     ->columns(2),
             ]);
     }
-
-    // ──────────────────────────────────────
-    // TABLE
-    // ──────────────────────────────────────
 
     public static function table(Table $table): Table
     {

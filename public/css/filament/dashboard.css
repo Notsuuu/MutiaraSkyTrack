@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════════
-   SIDEBAR WIDTH
+   1. SIDEBAR WIDTH TOKENS
    ═══════════════════════════════════════════════════════ */
 
 html.fi,
@@ -13,7 +13,7 @@ html.fi,
 }
 
 /* ═══════════════════════════════════════════════════════
-   MAIN CONTENT
+   2. MAIN CONTENT LAYOUT
    ═══════════════════════════════════════════════════════ */
 
 .fi-layout,
@@ -39,14 +39,26 @@ html.fi,
     padding-right: 1rem !important;
 }
 
+.fi-page .fi-fo-component-ctn,
+.fi-page .fi-sc-section {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
 .fi-wi,
 .fi-wi-widget,
 .fi-dashboard .fi-wi {
     max-width: 100% !important;
 }
 
+.fi-dashboard,
+.fi-dashboard > div,
+.fi-page-content > div {
+    gap: 1.25rem !important;
+}
+
 /* ═══════════════════════════════════════════════════════
-   PAGE HEADER — Judul Kiri, Tombol Ekspor Sejajar Filter
+   3. PAGE HEADER
    ═══════════════════════════════════════════════════════ */
 
 .fi-page .fi-header,
@@ -85,7 +97,6 @@ header.fi-header,
     min-width: 0 !important;
 }
 
-/* Judul — LIGHT MODE */
 .fi-page .fi-header-heading,
 .fi-page-header-heading,
 .fi-header-heading,
@@ -105,7 +116,6 @@ h1.fi-header-heading {
     text-overflow: ellipsis !important;
 }
 
-/* ⚡ Judul — DARK MODE */
 .dark .fi-page .fi-header-heading,
 .dark .fi-page-header-heading,
 .dark .fi-header-heading,
@@ -113,22 +123,13 @@ h1.fi-header-heading {
     color: #f1f5f9 !important;
 }
 
-/* ⚡ Breadcrumb — DARK MODE */
 .dark .fi-page .fi-breadcrumbs,
 .dark .fi-page .fi-header .fi-breadcrumbs,
-.dark .fi-breadcrumbs {
-    color: #64748b !important;
-}
+.dark .fi-breadcrumbs { color: #64748b !important; }
 
-.dark .fi-breadcrumbs a {
-    color: #94a3b8 !important;
-}
+.dark .fi-breadcrumbs a { color: #94a3b8 !important; }
+.dark .fi-breadcrumbs a:hover { color: #e2e8f0 !important; }
 
-.dark .fi-breadcrumbs a:hover {
-    color: #e2e8f0 !important;
-}
-
-/* Header actions — absolut sejajar filter */
 .fi-page:has(.sk-stats-grid) .fi-header-actions-ctn,
 .fi-page:has(.sk-stats-grid) .fi-header-actions {
     position: absolute !important;
@@ -151,7 +152,7 @@ h1.fi-header-heading {
 }
 
 /* ═══════════════════════════════════════════════════════
-   TOMBOL EKSPOR
+   4. TOMBOL EKSPOR
    ═══════════════════════════════════════════════════════ */
 
 .fi-page .fi-header-actions .fi-btn,
@@ -191,7 +192,7 @@ h1.fi-header-heading {
 }
 
 /* ═══════════════════════════════════════════════════════
-   COMPACT FILTER ROW — Dashboard Only
+   5. COMPACT FILTER ROW — Dashboard Only
    ═══════════════════════════════════════════════════════ */
 
 .fi-page:has(.sk-stats-grid) form,
@@ -249,7 +250,6 @@ h1.fi-header-heading {
     margin-bottom: 0 !important;
 }
 
-/* Filter label — LIGHT MODE */
 .fi-page:has(.sk-stats-grid) .fi-fo-field-label-content,
 .fi-page:has(.sk-stats-grid) .fi-fo-field-label-content span {
     font-size: 0.72rem !important;
@@ -260,13 +260,11 @@ h1.fi-header-heading {
     white-space: nowrap !important;
 }
 
-/* ⚡ Filter label — DARK MODE */
 .dark .fi-page:has(.sk-stats-grid) .fi-fo-field-label-content,
 .dark .fi-page:has(.sk-stats-grid) .fi-fo-field-label-content span {
     color: #94a3b8 !important;
 }
 
-/* ⚡ Filter placeholder — DARK MODE */
 .dark .fi-page:has(.sk-stats-grid) .fi-input::placeholder,
 .dark .fi-page:has(.sk-stats-grid) input::placeholder {
     color: #64748b !important;
@@ -291,7 +289,7 @@ h1.fi-header-heading {
 }
 
 /* ═══════════════════════════════════════════════════════
-   FIX SPACING
+   6. FIX SPACING
    ═══════════════════════════════════════════════════════ */
 
 .fi-page:has(.sk-stats-grid) > div,
@@ -325,7 +323,7 @@ h1.fi-header-heading {
 }
 
 /* ═══════════════════════════════════════════════════════
-   TOPBAR — Dark Navy
+   7. TOPBAR
    ═══════════════════════════════════════════════════════ */
 
 .fi-topbar {
@@ -348,9 +346,7 @@ h1.fi-header-heading {
 .fi-topbar .fi-global-search-ctn,
 .fi-topbar .fi-global-search-field,
 .fi-topbar [x-data*="globalSearch"],
-.fi-topbar .fi-topbar-global-search {
-    display: none !important;
-}
+.fi-topbar .fi-topbar-global-search { display: none !important; }
 
 .fi-topbar nav,
 .fi-topbar > div,
@@ -363,9 +359,7 @@ h1.fi-header-heading {
 
 .fi-topbar button,
 .fi-topbar a,
-.fi-topbar .fi-icon-btn {
-    color: #cbd5e1 !important;
-}
+.fi-topbar .fi-icon-btn { color: #cbd5e1 !important; }
 
 .fi-topbar button:hover,
 .fi-topbar a:hover,
@@ -375,9 +369,7 @@ h1.fi-header-heading {
 }
 
 .fi-topbar .fi-user-menu-trigger,
-.fi-topbar .fi-dropdown-trigger {
-    color: #ffffff !important;
-}
+.fi-topbar .fi-dropdown-trigger { color: #ffffff !important; }
 
 .fi-topbar .fi-avatar,
 .fi-topbar .fi-user-avatar {
@@ -387,9 +379,7 @@ h1.fi-header-heading {
 }
 
 .fi-topbar .fi-topbar-sidebar-toggle,
-.fi-topbar .fi-sidebar-toggle {
-    color: #cbd5e1 !important;
-}
+.fi-topbar .fi-sidebar-toggle { color: #cbd5e1 !important; }
 
 .fi-topbar .fi-user-menu,
 .fi-topbar .fi-user-menu-trigger,
@@ -400,82 +390,46 @@ h1.fi-header-heading {
 }
 
 /* ═══════════════════════════════════════════════════════
-   TOPBAR CONTENT
+   8. TOPBAR CONTENT (brand, divider, page title)
    ═══════════════════════════════════════════════════════ */
 
-.sk-topbar-wrap {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    min-width: 0;
-    flex: 0 1 auto;
-}
-
-.sk-topbar-brand {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-shrink: 0;
-}
+.sk-topbar-wrap { display: flex; align-items: center; gap: 1rem; min-width: 0; flex: 0 1 auto; }
+.sk-topbar-brand { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
 
 .sk-topbar-brand-logo {
-    width: 42px;
-    height: 42px;
-    background: #ffffff;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 42px; height: 42px;
+    background: #ffffff; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
     padding: 5px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     flex-shrink: 0;
 }
 
-.sk-topbar-brand-logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-.sk-topbar-brand-text {
-    line-height: 1.15;
-}
+.sk-topbar-brand-logo img { width: 100%; height: 100%; object-fit: contain; }
+.sk-topbar-brand-text { line-height: 1.15; }
 
 .sk-topbar-brand-name {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #ffffff;
-    letter-spacing: -0.01em;
-    white-space: nowrap;
+    font-size: 1.05rem; font-weight: 700;
+    color: #ffffff; letter-spacing: -0.01em; white-space: nowrap;
 }
 
 .sk-topbar-brand-subtitle {
-    font-size: 0.6rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    color: #4f6fb5;
-    text-transform: uppercase;
-    margin-top: 2px;
-    white-space: nowrap;
+    font-size: 0.6rem; font-weight: 600;
+    letter-spacing: 0.15em; color: #4f6fb5;
+    text-transform: uppercase; margin-top: 2px; white-space: nowrap;
 }
 
 .sk-topbar-divider {
-    width: 1px;
-    height: 28px;
+    width: 1px; height: 28px;
     background: rgba(255, 255, 255, 0.12);
-    flex-shrink: 0;
-    margin: 0 0.25rem;
+    flex-shrink: 0; margin: 0 0.25rem;
 }
 
 .sk-topbar-page-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #e2e8f0;
-    letter-spacing: -0.01em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex-shrink: 0;
+    font-size: 0.95rem; font-weight: 600;
+    color: #e2e8f0; letter-spacing: -0.01em;
+    white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; flex-shrink: 0;
 }
 
 @media (max-width: 1024px) {
@@ -484,7 +438,7 @@ h1.fi-header-heading {
 }
 
 /* ═══════════════════════════════════════════════════════
-   SIDEBAR — Dark Navy
+   9. SIDEBAR — BASE
    ═══════════════════════════════════════════════════════ */
 
 body .fi-sidebar,
@@ -516,83 +470,209 @@ body .fi-sidebar-header,
 
 .fi-sidebar-header .fi-logo,
 .fi-sidebar-header-heading,
-.fi-sidebar .fi-logo {
-    color: #ffffff !important;
-}
-
-.fi-sidebar-group-label,
-.fi-sidebar-group-button {
-    color: #64748b !important;
-    font-size: 0.6rem !important;
-    letter-spacing: 0.1em !important;
-    text-transform: uppercase !important;
-    font-weight: 700 !important;
-    padding-left: 0.75rem !important;
-    padding-right: 0.75rem !important;
-}
+.fi-sidebar .fi-logo { color: #ffffff !important; }
 
 .fi-sidebar .fi-sidebar-nav {
     padding-left: 0.75rem !important;
     padding-right: 0.75rem !important;
 }
 
+/* ═══════════════════════════════════════════════════════
+   10. SIDEBAR — UNIFIED ROW
+   ★ KUNCI ALIGNMENT: item + group header punya dimensi identik
+   ═══════════════════════════════════════════════════════ */
+
 .fi-sidebar-item-button,
-.fi-sidebar-item-btn {
-    color: #cbd5e1 !important;
-    border-radius: 10px !important;
-    transition: all 0.15s ease !important;
+.fi-sidebar-group-btn,
+.fi-sidebar-group-button,
+.fi-sidebar-group-trigger {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 0.75rem !important;
+    width: 100% !important;
+    min-height: 42px !important;
     padding: 0.55rem 0.75rem !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    background-color: transparent !important;
+    color: #cbd5e1 !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+    text-align: left !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    box-sizing: border-box !important;
+    transition: background-color 0.15s ease, color 0.15s ease !important;
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 .fi-sidebar-item-button:hover,
-.fi-sidebar-item-btn:hover {
+.fi-sidebar-group-btn:hover,
+.fi-sidebar-group-button:hover,
+.fi-sidebar-group-trigger:hover {
     background-color: rgba(255, 255, 255, 0.06) !important;
     color: #ffffff !important;
 }
 
-.fi-sidebar-item-label {
-    color: inherit !important;
-    font-size: 0.9rem !important;
+/* Icon kiri — ukuran & warna sama untuk semua row */
+.fi-sidebar-item-button > svg,
+.fi-sidebar-group-btn > svg:first-child,
+.fi-sidebar-group-button > svg:first-child,
+.fi-sidebar-group-trigger > svg:first-child,
+.fi-sidebar-group-btn > .sk-injected-icon {
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    max-width: 20px !important;
+    flex-shrink: 0 !important;
+    color: #94a3b8 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-block !important;
 }
 
-/* MENU ITEM AKTIF — SKY BLUE */
-.fi-sidebar .fi-sidebar-item-active > .fi-sidebar-item-button,
-.fi-sidebar .fi-sidebar-item-active .fi-sidebar-item-button,
-.fi-sidebar .fi-sidebar-item.fi-active > .fi-sidebar-item-button,
-.fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-button,
-.fi-sidebar a.fi-sidebar-item-button[aria-current="page"],
-.fi-sidebar a.fi-sidebar-item-button[aria-current="true"],
-.fi-sidebar .fi-active .fi-sidebar-item-button,
-.fi-sidebar .fi-sidebar-item-active > a,
-.fi-sidebar .fi-sidebar-item.fi-active > a,
-li.fi-sidebar-item-active > a,
-li.fi-sidebar-item.fi-active > a {
+/* Label — font & spacing identik */
+.fi-sidebar-item-label,
+.fi-sidebar-group-label {
+    flex: 1 1 auto !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+    color: inherit !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: inline-block !important;
+}
+
+/* Hide chevron Filament 5 (render sebagai <button> terpisah) */
+.fi-sidebar-group-collapse-btn { display: none !important; }
+
+/* ═══════════════════════════════════════════════════════
+   11. SIDEBAR — SUB-ITEMS INDENT
+   ═══════════════════════════════════════════════════════ */
+
+/* Sub-items di grup BERLABEL → indentasi */
+.fi-sidebar-group:has(.fi-sidebar-group-label) > .fi-sidebar-group-items,
+.fi-sidebar-group:has(.fi-sidebar-group-label) > ul {
+    padding-left: 1rem !important;
+    padding-top: 2px !important;
+    padding-bottom: 4px !important;
+    margin: 0 !important;
+}
+
+/* Default group (TANPA label, berisi Dashboard) → no indentasi */
+.fi-sidebar-nav-groups > .fi-sidebar-group:not(:has(.fi-sidebar-group-label)) > .fi-sidebar-group-items,
+.fi-sidebar-nav-groups > .fi-sidebar-group:not(:has(.fi-sidebar-group-label)) > ul,
+.fi-sidebar-group:not(:has(.fi-sidebar-group-label)) > .fi-sidebar-group-items {
+    padding-left: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin: 0 !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   12. SIDEBAR — SPACING UNIFORM
+   ═══════════════════════════════════════════════════════ */
+
+.fi-sidebar-nav-groups {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+}
+
+.fi-sidebar-nav-groups > li {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   13. SIDEBAR — ACTIVE STATE (GRADIENT SKY)
+   ═══════════════════════════════════════════════════════ */
+
+/* Item biasa aktif */
+.fi-sidebar [aria-current="page"],
+.fi-sidebar [aria-current="true"],
+.fi-sidebar .fi-sidebar-item-button.fi-active,
+.fi-sidebar a.fi-sidebar-item-button[aria-current="page"] {
     background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%) !important;
     color: #ffffff !important;
-    box-shadow: 0 4px 12px -2px rgba(2, 132, 199, 0.45) !important;
+    box-shadow: 0 4px 12px -2px rgba(2, 132, 199, 0.5) !important;
 }
 
-.fi-sidebar .fi-sidebar-item-active > .fi-sidebar-item-button:hover,
-.fi-sidebar .fi-sidebar-item-active .fi-sidebar-item-button:hover,
-.fi-sidebar .fi-sidebar-item.fi-active > .fi-sidebar-item-button:hover,
-.fi-sidebar a.fi-sidebar-item-button[aria-current="page"]:hover {
+.fi-sidebar [aria-current="page"]:hover,
+.fi-sidebar [aria-current="true"]:hover,
+.fi-sidebar .fi-sidebar-item-button.fi-active:hover {
     background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
 }
 
-.fi-sidebar-item-active svg,
-.fi-sidebar-item-active .fi-sidebar-item-icon,
-.fi-sidebar-item.fi-active svg,
-.fi-sidebar-item.fi-active .fi-sidebar-item-icon,
-a.fi-sidebar-item-button[aria-current="page"] svg {
+/* Group header aktif (child-nya ada yang aktif) */
+.fi-sidebar-group:has([aria-current="page"]) .fi-sidebar-group-btn,
+.fi-sidebar-group:has([aria-current="true"]) .fi-sidebar-group-btn,
+.fi-sidebar-group:has(.fi-sidebar-item-active) .fi-sidebar-group-btn,
+.fi-sidebar-group:has(.fi-active) .fi-sidebar-group-btn {
+    background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px -2px rgba(2, 132, 199, 0.5) !important;
+}
+
+.fi-sidebar-group:has([aria-current="page"]) .fi-sidebar-group-btn:hover,
+.fi-sidebar-group:has(.fi-sidebar-item-active) .fi-sidebar-group-btn:hover {
+    background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
+}
+
+/* Semua konten jadi putih saat aktif */
+.fi-sidebar [aria-current="page"],
+.fi-sidebar [aria-current="page"] *,
+.fi-sidebar [aria-current="page"] svg,
+.fi-sidebar [aria-current="true"],
+.fi-sidebar [aria-current="true"] *,
+.fi-sidebar [aria-current="true"] svg,
+.fi-sidebar .fi-sidebar-item-button.fi-active,
+.fi-sidebar .fi-sidebar-item-button.fi-active *,
+.fi-sidebar .fi-sidebar-item-button.fi-active svg,
+.fi-sidebar-group:has([aria-current="page"]) .fi-sidebar-group-btn,
+.fi-sidebar-group:has([aria-current="page"]) .fi-sidebar-group-btn *,
+.fi-sidebar-group:has([aria-current="page"]) .fi-sidebar-group-btn svg,
+.fi-sidebar-group:has(.fi-sidebar-item-active) .fi-sidebar-group-btn,
+.fi-sidebar-group:has(.fi-sidebar-item-active) .fi-sidebar-group-btn *,
+.fi-sidebar-group:has(.fi-sidebar-item-active) .fi-sidebar-group-btn svg {
     color: #ffffff !important;
 }
 
-.fi-sidebar-item-active .fi-sidebar-item-label,
-.fi-sidebar-item.fi-active .fi-sidebar-item-label,
-a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
-    color: #ffffff !important;
+/* Label aktif jadi bold */
+.fi-sidebar [aria-current="page"] .fi-sidebar-item-label,
+.fi-sidebar .fi-sidebar-item-button.fi-active .fi-sidebar-item-label,
+.fi-sidebar-group:has([aria-current="page"]) .fi-sidebar-group-label,
+.fi-sidebar-group:has(.fi-sidebar-item-active) .fi-sidebar-group-label {
     font-weight: 600 !important;
 }
+
+/* ═══════════════════════════════════════════════════════
+   14. SIDEBAR — STANDALONE ITEM (Laporan dipindah)
+   ═══════════════════════════════════════════════════════ */
+
+.sk-standalone-item {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+/* Style visual sudah otomatis dari rule #10 */
+
+/* ═══════════════════════════════════════════════════════
+   15. SIDEBAR — FOOTER
+   ═══════════════════════════════════════════════════════ */
 
 .fi-sidebar-item-badge {
     background-color: rgba(255, 255, 255, 0.15) !important;
@@ -604,13 +684,10 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
     border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
-.fi-main-ctn,
-.fi-main {
-    --sidebar-width: 15rem !important;
-}
+.fi-main-ctn, .fi-main { --sidebar-width: 15rem !important; }
 
 /* ═══════════════════════════════════════════════════════
-   STATS GRID
+   16. STATS GRID
    ═══════════════════════════════════════════════════════ */
 
 .sk-stats-grid {
@@ -628,11 +705,8 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
 
 @media (min-width: 1280px) {
     .sk-stats-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-
     .sk-stats-grid > .sk-stat-card:nth-child(5),
-    .sk-stats-grid > .sk-stat-card:nth-child(6) {
-        grid-column: span 2;
-    }
+    .sk-stats-grid > .sk-stat-card:nth-child(6) { grid-column: span 2; }
 }
 
 .sk-stat-card {
@@ -652,10 +726,7 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
     box-sizing: border-box;
 }
 
-.dark .sk-stat-card {
-    background: #0f172a;
-    border-color: #1e293b;
-}
+.dark .sk-stat-card { background: #0f172a; border-color: #1e293b; }
 
 .sk-stat-card:hover {
     box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.15);
@@ -670,31 +741,11 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
     padding: 1.75rem 1.85rem;
 }
 
-.sk-stat-card-horizontal .sk-stat-icon-box {
-    width: 60px;
-    height: 60px;
-    margin: 0;
-    border-radius: 16px;
-}
+.sk-stat-card-horizontal .sk-stat-icon-box { width: 60px; height: 60px; margin: 0; border-radius: 16px; }
+.sk-stat-card-horizontal .sk-stat-icon { width: 30px !important; height: 30px !important; }
+.sk-stat-value-row { display: flex; align-items: baseline; gap: 0.6rem; margin-top: 0.15rem; }
+.sk-stat-body { flex: 1; min-width: 0; }
 
-.sk-stat-card-horizontal .sk-stat-icon {
-    width: 30px !important;
-    height: 30px !important;
-}
-
-.sk-stat-value-row {
-    display: flex;
-    align-items: baseline;
-    gap: 0.6rem;
-    margin-top: 0.15rem;
-}
-
-.sk-stat-body {
-    flex: 1;
-    min-width: 0;
-}
-
-/* Label — LIGHT MODE */
 .sk-stat-label {
     font-size: 0.75rem;
     font-weight: 700;
@@ -707,12 +758,8 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
     text-overflow: ellipsis;
 }
 
-/* ⚡ Label — DARK MODE */
-.dark .sk-stat-label {
-    color: #94a3b8;
-}
+.dark .sk-stat-label { color: #94a3b8; }
 
-/* Value — LIGHT MODE */
 .sk-stat-value {
     font-size: 2.35rem;
     font-weight: 700;
@@ -722,17 +769,9 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
     letter-spacing: -0.03em;
 }
 
-.sk-stat-card-horizontal .sk-stat-value {
-    font-size: 2.25rem;
-    margin-bottom: 0;
-}
+.sk-stat-card-horizontal .sk-stat-value { font-size: 2.25rem; margin-bottom: 0; }
+.dark .sk-stat-value { color: #f1f5f9; }
 
-/* ⚡ Value — DARK MODE */
-.dark .sk-stat-value {
-    color: #f1f5f9;
-}
-
-/* Desc — LIGHT MODE */
 .sk-stat-desc {
     display: flex;
     align-items: center;
@@ -742,33 +781,13 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
     flex-wrap: wrap;
 }
 
-/* ⚡ Desc — DARK MODE */
-.dark .sk-stat-desc {
-    color: #94a3b8;
-}
-
-.sk-stat-unit {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-weight: 500;
-}
-
-.sk-stat-unit-icon {
-    width: 17px !important;
-    height: 17px !important;
-    color: #0284c7;
-}
-
-.sk-stat-percent {
-    font-weight: 700;
-    font-size: 1rem;
-}
-
+.dark .sk-stat-desc { color: #94a3b8; }
+.sk-stat-unit { display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 500; }
+.sk-stat-unit-icon { width: 17px !important; height: 17px !important; color: #0284c7; }
+.sk-stat-percent { font-weight: 700; font-size: 1rem; }
 .sk-stat-percent-rose    { color: #e11d48; }
 .sk-stat-percent-slate   { color: #64748b; }
 .sk-stat-percent-emerald { color: #059669; }
-
 .dark .sk-stat-percent-slate { color: #94a3b8; }
 
 .sk-stat-icon-box {
@@ -781,10 +800,7 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
     justify-content: center;
 }
 
-.sk-stat-icon {
-    width: 34px !important;
-    height: 34px !important;
-}
+.sk-stat-icon { width: 34px !important; height: 34px !important; }
 
 .sk-stat-indigo  .sk-stat-icon-box { background: #eef2ff; color: #4f46e5; }
 .sk-stat-blue    .sk-stat-icon-box { background: #e0f2fe; color: #0284c7; }
@@ -815,7 +831,7 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
 }
 
 /* ═══════════════════════════════════════════════════════
-   CHART WIDGET
+   17. CHART WIDGET
    ═══════════════════════════════════════════════════════ */
 
 .fi-wi-chart {
@@ -826,12 +842,8 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
-.dark .fi-wi-chart {
-    background: #0f172a;
-    border-color: #1e293b;
-}
+.dark .fi-wi-chart { background: #0f172a; border-color: #1e293b; }
 
-/* Chart heading — LIGHT MODE */
 .fi-wi-chart .fi-wi-chart-heading,
 .fi-wi-chart .fi-section-header-heading {
     font-size: 0.95rem;
@@ -840,13 +852,9 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
     margin-bottom: 0.75rem;
 }
 
-/* ⚡ Chart heading — DARK MODE */
 .dark .fi-wi-chart .fi-wi-chart-heading,
-.dark .fi-wi-chart .fi-section-header-heading {
-    color: #f1f5f9;
-}
+.dark .fi-wi-chart .fi-section-header-heading { color: #f1f5f9; }
 
-/* Chart canvas wrapper — support struktur custom */
 .fi-wi-chart [x-data*="skyChart"] {
     height: 280px !important;
     position: relative !important;
@@ -861,24 +869,15 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
 }
 
 /* ═══════════════════════════════════════════════════════
-   CHART CARD ENTRANCE ANIMATION
+   18. CHART ENTRANCE ANIMATION
    ═══════════════════════════════════════════════════════ */
 
 @keyframes sk-chart-fade-in {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.fi-wi-chart {
-    animation: sk-chart-fade-in 0.6s ease-out backwards;
-}
-
+.fi-wi-chart { animation: sk-chart-fade-in 0.6s ease-out backwards; }
 .fi-wi-chart:nth-of-type(1) { animation-delay: 0.05s; }
 .fi-wi-chart:nth-of-type(2) { animation-delay: 0.15s; }
 .fi-wi-chart:nth-of-type(3) { animation-delay: 0.25s; }
@@ -887,6 +886,49 @@ a.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-label {
 .fi-wi-chart:nth-of-type(6) { animation-delay: 0.55s; }
 .fi-wi-chart:nth-of-type(7) { animation-delay: 0.65s; }
 
-.sk-stat-card {
-    animation: sk-chart-fade-in 0.5s ease-out backwards;
+.sk-stat-card { animation: sk-chart-fade-in 0.5s ease-out backwards; }
+
+/* ═══════════════════════════════════════════════════════
+   19. SIDEBAR — FALLBACK RESET
+   (override rule lama yang tidak match class Filament 5)
+   ═══════════════════════════════════════════════════════ */
+
+.fi-sidebar-group > div:first-child,
+.fi-sidebar-group > button:first-child,
+.fi-sidebar-group-header,
+.fi-sidebar-group-button,
+.fi-sidebar-group-trigger {
+    /* Sudah ditangani oleh rule #10 */
+}
+
+.fi-sidebar-group > button.fi-sidebar-group-collapse-btn {
+    all: unset !important;
+    display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   20. PAGE TRANSITION
+   (dipicu via JS class toggle, aman di-replay pada navigasi)
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes sk-page-enter {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fi-main-ctn.sk-page-enter {
+    animation: sk-page-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Hormati preferensi user */
+@media (prefers-reduced-motion: reduce) {
+    .fi-main-ctn.sk-page-enter {
+        animation: none !important;
+    }
 }

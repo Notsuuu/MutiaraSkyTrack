@@ -1,0 +1,365 @@
+/* ═══════════════════════════════════════════════════════
+   Mutiara SkyTrack — Laporan LLAU Styles
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Toolbar ────────────────────────────────────────── */
+.lap-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.lap-tabs {
+    display: inline-flex;
+    background: #f1f5f9;
+    border-radius: 10px;
+    padding: 4px;
+}
+
+.dark .lap-tabs {
+    background: #1e293b;
+}
+
+.lap-tab {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    transition: all 0.15s ease;
+}
+
+.lap-tab:hover {
+    color: #0f172a;
+}
+
+.dark .lap-tab:hover {
+    color: #f1f5f9;
+}
+
+.lap-tab.active {
+    background: #ffffff;
+    color: #4f46e5;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.dark .lap-tab.active {
+    background: #0f172a;
+    color: #a5b4fc;
+}
+
+.lap-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.lap-select {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #0f172a;
+    cursor: pointer;
+}
+
+.dark .lap-select {
+    background: #0f172a;
+    border-color: #1e293b;
+    color: #f1f5f9;
+}
+
+/* ── Buttons ────────────────────────────────────────── */
+.lap-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.lap-btn-excel {
+    background: #059669;
+    color: #ffffff;
+}
+
+.lap-btn-excel:hover {
+    background: #047857;
+}
+
+.lap-btn-image {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    color: #ffffff;
+}
+
+.lap-btn-image:hover {
+    background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+}
+
+/* ── Card ───────────────────────────────────────────── */
+.lap-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.dark .lap-card {
+    background: #0f172a;
+    border-color: #1e293b;
+}
+
+/* ── KOP Header ─────────────────────────────────────── */
+.lap-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.dark .lap-header {
+    border-color: #1e293b;
+}
+
+.lap-header-line1 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.3rem;
+}
+
+.lap-header-line2 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.3rem;
+}
+
+.dark .lap-header-line2 {
+    color: #f1f5f9;
+}
+
+.lap-header-line3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #4f46e5;
+    margin-bottom: 0.3rem;
+}
+
+.lap-header-line4 {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+/* ── Table Title ────────────────────────────────────── */
+.lap-table-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #4f46e5;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ── Table Wrapper ──────────────────────────────────── */
+.lap-table-wrapper {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 2rem;
+}
+
+.dark .lap-table-wrapper {
+    border-color: #1e293b;
+}
+
+/* ── Table Base ─────────────────────────────────────── */
+.lap-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    white-space: nowrap;
+}
+
+.lap-table thead th {
+    padding: 0.6rem 0.5rem;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Group header colors */
+.th-no       { background: #1e293b; }
+.th-bulan    { background: #1e293b; }
+.th-flight   { background: #1e40af; }
+.th-rute     { background: #0f766e; }
+.th-pax      { background: #065f46; }
+.th-transit  { background: #92400e; }
+.th-bagasi   { background: #1e293b; }
+.th-kargo    { background: #3730a3; }
+.th-pos      { background: #1e293b; }
+.th-status   { background: #991b1b; }
+
+/* Body */
+.lap-table tbody td {
+    padding: 0.5rem 0.5rem;
+    text-align: center;
+    border: 1px solid #e5e7eb;
+    color: #334155;
+}
+
+.dark .lap-table tbody td {
+    border-color: #1e293b;
+    color: #cbd5e1;
+}
+
+.lap-table tbody tr:nth-child(even) td {
+    background: #f8fafc;
+}
+
+.dark .lap-table tbody tr:nth-child(even) td {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.lap-table tbody tr:hover td {
+    background: #eef2ff;
+}
+
+.dark .lap-table tbody tr:hover td {
+    background: rgba(79, 70, 229, 0.08);
+}
+
+/* ── Cell Variations ────────────────────────────────── */
+.cell-total {
+    font-weight: 700;
+    color: #0f172a !important;
+    background: #f1f5f9 !important;
+}
+
+.dark .cell-total {
+    color: #f1f5f9 !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.cell-bold-orange { font-weight: 700; color: #ea580c !important; }
+.cell-bold-green  { font-weight: 700; color: #059669 !important; }
+.cell-bold-blue   { font-weight: 700; color: #2563eb !important; }
+.cell-bold-purple { font-weight: 700; color: #7c3aed !important; }
+.cell-bold-red    { font-weight: 700; color: #dc2626 !important; }
+
+/* ── Summary Rows ───────────────────────────────────── */
+.lap-table tbody tr.row-summary td {
+    background: #e0e7ff !important;
+    font-weight: 700;
+    color: #0f172a !important;
+    border-color: #c7d2fe !important;
+}
+
+.dark .lap-table tbody tr.row-summary td {
+    background: rgba(79, 70, 229, 0.15) !important;
+    color: #a5b4fc !important;
+    border-color: rgba(79, 70, 229, 0.3) !important;
+}
+
+.lap-table tbody tr.row-grand-total td {
+    background: #0a1128 !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    border-color: #1e293b !important;
+}
+
+.lap-table tbody tr.row-average td {
+    background: #f1f5f9 !important;
+    color: #64748b !important;
+    font-style: italic;
+    font-weight: 600;
+}
+
+.dark .lap-table tbody tr.row-average td {
+    background: rgba(255, 255, 255, 0.03) !important;
+    color: #94a3b8 !important;
+}
+
+/* ── Tabel B Compact ────────────────────────────────── */
+.lap-table-b th,
+.lap-table-b td {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.35rem;
+}
+
+/* ── Print Friendly ─────────────────────────────────── */
+@media print {
+    .lap-toolbar {
+        display: none !important;
+    }
+
+    .lap-card {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+    }
+
+    .lap-table-wrapper {
+        border: none;
+        overflow: visible;
+    }
+
+    .lap-table {
+        font-size: 0.65rem;
+    }
+
+    .lap-table thead th {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .lap-table tbody tr.row-grand-total td,
+    .lap-table tbody tr.row-summary td,
+    .lap-table tbody tr.row-average td {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width: 640px) {
+    .lap-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .lap-tabs {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .lap-actions {
+        justify-content: center;
+    }
+
+    .lap-card {
+        padding: 1rem;
+    }
+}
