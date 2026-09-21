@@ -326,6 +326,8 @@ h1.fi-header-heading {
    7. TOPBAR
    ═══════════════════════════════════════════════════════ */
 
+html body .fi-topbar,
+body:not(.dark) .fi-topbar,
 .fi-topbar {
     background-color: #0a1128 !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
@@ -357,10 +359,19 @@ h1.fi-header-heading {
     width: 100% !important;
 }
 
+html body .fi-topbar button,
+html body .fi-topbar a,
+html body .fi-topbar .fi-icon-btn,
+body:not(.dark) .fi-topbar button,
+body:not(.dark) .fi-topbar a,
 .fi-topbar button,
 .fi-topbar a,
 .fi-topbar .fi-icon-btn { color: #cbd5e1 !important; }
 
+html body .fi-topbar button:hover,
+html body .fi-topbar a:hover,
+body:not(.dark) .fi-topbar button:hover,
+body:not(.dark) .fi-topbar a:hover,
 .fi-topbar button:hover,
 .fi-topbar a:hover,
 .fi-topbar .fi-icon-btn:hover {
@@ -438,16 +449,21 @@ h1.fi-header-heading {
 }
 
 /* ═══════════════════════════════════════════════════════
-   9. SIDEBAR — BASE
+   9. SIDEBAR — BASE (FORCE DARK, ALL THEMES)
    ═══════════════════════════════════════════════════════ */
 
-body .fi-sidebar,
-body .fi-layout .fi-sidebar,
-.fi-body .fi-sidebar,
+html body .fi-sidebar,
+html body .fi-layout .fi-sidebar,
+html body .fi-body .fi-sidebar,
+html body aside.fi-sidebar,
+body:not(.dark) .fi-sidebar,
+body:not(.dark) aside.fi-sidebar,
 aside.fi-sidebar,
 .fi-sidebar {
     background-color: #0a1128 !important;
+    background: #0a1128 !important;
     border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+    color: #cbd5e1 !important;
     width: 15rem !important;
     max-width: 15rem !important;
     min-width: 15rem !important;
@@ -460,14 +476,21 @@ aside.fi-sidebar,
     min-width: 3.5rem !important;
 }
 
+html body .fi-sidebar-header,
+html body .fi-sidebar > header,
+body:not(.dark) .fi-sidebar-header,
 body .fi-sidebar-header,
 .fi-body .fi-sidebar-header,
 .fi-sidebar > header {
     background-color: #0a1128 !important;
+    background: #0a1128 !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
     color: #ffffff !important;
 }
 
+html body .fi-sidebar-header .fi-logo,
+html body .fi-sidebar .fi-logo,
+body:not(.dark) .fi-sidebar-header .fi-logo,
 .fi-sidebar-header .fi-logo,
 .fi-sidebar-header-heading,
 .fi-sidebar .fi-logo { color: #ffffff !important; }
@@ -511,14 +534,6 @@ body .fi-sidebar-header,
     box-shadow: none !important;
 }
 
-.fi-sidebar-item-button:hover,
-.fi-sidebar-group-btn:hover,
-.fi-sidebar-group-button:hover,
-.fi-sidebar-group-trigger:hover {
-    background-color: rgba(255, 255, 255, 0.06) !important;
-    color: #ffffff !important;
-}
-
 /* Icon kiri — ukuran & warna sama untuk semua row */
 .fi-sidebar-item-button > svg,
 .fi-sidebar-group-btn > svg:first-child,
@@ -560,7 +575,6 @@ body .fi-sidebar-header,
    11. SIDEBAR — SUB-ITEMS INDENT
    ═══════════════════════════════════════════════════════ */
 
-/* Sub-items di grup BERLABEL → indentasi */
 .fi-sidebar-group:has(.fi-sidebar-group-label) > .fi-sidebar-group-items,
 .fi-sidebar-group:has(.fi-sidebar-group-label) > ul {
     padding-left: 1rem !important;
@@ -569,7 +583,6 @@ body .fi-sidebar-header,
     margin: 0 !important;
 }
 
-/* Default group (TANPA label, berisi Dashboard) → no indentasi */
 .fi-sidebar-nav-groups > .fi-sidebar-group:not(:has(.fi-sidebar-group-label)) > .fi-sidebar-group-items,
 .fi-sidebar-nav-groups > .fi-sidebar-group:not(:has(.fi-sidebar-group-label)) > ul,
 .fi-sidebar-group:not(:has(.fi-sidebar-group-label)) > .fi-sidebar-group-items {
@@ -599,7 +612,11 @@ body .fi-sidebar-header,
    13. SIDEBAR — ACTIVE STATE (GRADIENT SKY)
    ═══════════════════════════════════════════════════════ */
 
-/* Item biasa aktif */
+html body .fi-sidebar [aria-current="page"],
+html body .fi-sidebar [aria-current="true"],
+html body .fi-sidebar .fi-sidebar-item-button.fi-active,
+html body .fi-sidebar a.fi-sidebar-item-button[aria-current="page"],
+body:not(.dark) .fi-sidebar [aria-current="page"],
 .fi-sidebar [aria-current="page"],
 .fi-sidebar [aria-current="true"],
 .fi-sidebar .fi-sidebar-item-button.fi-active,
@@ -616,6 +633,11 @@ body .fi-sidebar-header,
 }
 
 /* Group header aktif (child-nya ada yang aktif) */
+html body .fi-sidebar-group:has([aria-current="page"]) .fi-sidebar-group-btn,
+html body .fi-sidebar-group:has([aria-current="true"]) .fi-sidebar-group-btn,
+html body .fi-sidebar-group:has(.fi-sidebar-item-active) .fi-sidebar-group-btn,
+html body .fi-sidebar-group:has(.fi-active) .fi-sidebar-group-btn,
+body:not(.dark) .fi-sidebar-group:has([aria-current="page"]) .fi-sidebar-group-btn,
 .fi-sidebar-group:has([aria-current="page"]) .fi-sidebar-group-btn,
 .fi-sidebar-group:has([aria-current="true"]) .fi-sidebar-group-btn,
 .fi-sidebar-group:has(.fi-sidebar-item-active) .fi-sidebar-group-btn,
@@ -631,22 +653,25 @@ body .fi-sidebar-header,
 }
 
 /* Semua konten jadi putih saat aktif */
-.fi-sidebar [aria-current="page"],
-.fi-sidebar [aria-current="page"] *,
-.fi-sidebar [aria-current="page"] svg,
-.fi-sidebar [aria-current="true"],
-.fi-sidebar [aria-current="true"] *,
-.fi-sidebar [aria-current="true"] svg,
-.fi-sidebar .fi-sidebar-item-button.fi-active,
-.fi-sidebar .fi-sidebar-item-button.fi-active *,
-.fi-sidebar .fi-sidebar-item-button.fi-active svg,
-.fi-sidebar-group:has([aria-current="page"]) .fi-sidebar-group-btn,
-.fi-sidebar-group:has([aria-current="page"]) .fi-sidebar-group-btn *,
-.fi-sidebar-group:has([aria-current="page"]) .fi-sidebar-group-btn svg,
-.fi-sidebar-group:has(.fi-sidebar-item-active) .fi-sidebar-group-btn,
-.fi-sidebar-group:has(.fi-sidebar-item-active) .fi-sidebar-group-btn *,
-.fi-sidebar-group:has(.fi-sidebar-item-active) .fi-sidebar-group-btn svg {
+html body .fi-sidebar [aria-current="page"],
+html body .fi-sidebar [aria-current="page"] *,
+html body .fi-sidebar [aria-current="page"] svg,
+html body .fi-sidebar [aria-current="true"],
+html body .fi-sidebar [aria-current="true"] *,
+html body .fi-sidebar [aria-current="true"] svg,
+html body .fi-sidebar .fi-sidebar-item-button.fi-active,
+html body .fi-sidebar .fi-sidebar-item-button.fi-active *,
+html body .fi-sidebar .fi-sidebar-item-button.fi-active svg,
+html body .fi-sidebar-group:has([aria-current="page"]) .fi-sidebar-group-btn,
+html body .fi-sidebar-group:has([aria-current="page"]) .fi-sidebar-group-btn *,
+html body .fi-sidebar-group:has([aria-current="page"]) .fi-sidebar-group-btn svg,
+html body .fi-sidebar-group:has(.fi-sidebar-item-active) .fi-sidebar-group-btn,
+html body .fi-sidebar-group:has(.fi-sidebar-item-active) .fi-sidebar-group-btn *,
+html body .fi-sidebar-group:has(.fi-sidebar-item-active) .fi-sidebar-group-btn svg,
+body:not(.dark) .fi-sidebar [aria-current="page"] *,
+body:not(.dark) .fi-sidebar-group:has([aria-current="page"]) .fi-sidebar-group-btn * {
     color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
 }
 
 /* Label aktif jadi bold */
@@ -668,26 +693,270 @@ body .fi-sidebar-header,
     width: 100% !important;
     box-sizing: border-box !important;
 }
-/* Style visual sudah otomatis dari rule #10 */
+
+/* Force text & icon terang (fix light mode bug) */
+html body .sk-standalone-item,
+html body .sk-standalone-item *,
+html body .sk-standalone-item > a,
+html body .sk-standalone-item > a *,
+html body .sk-standalone-item > .fi-sidebar-item-button,
+html body .sk-standalone-item > .fi-sidebar-item-button *,
+html body .sk-standalone-item .fi-sidebar-item-label,
+body:not(.dark) .sk-standalone-item,
+body:not(.dark) .sk-standalone-item *,
+body:not(.dark) .sk-standalone-item .fi-sidebar-item-label {
+    color: #cbd5e1 !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
+}
+
+html body .sk-standalone-item > a > svg,
+html body .sk-standalone-item > .fi-sidebar-item-button > svg,
+body:not(.dark) .sk-standalone-item > a > svg {
+    color: #94a3b8 !important;
+    stroke: #94a3b8 !important;
+}
+
+/* Active state standalone item */
+html body .sk-standalone-item > a[aria-current="page"],
+html body .sk-standalone-item > a[aria-current="true"],
+html body .sk-standalone-item > .fi-sidebar-item-button[aria-current="page"],
+html body .sk-standalone-item > .fi-sidebar-item-button.fi-active,
+body:not(.dark) .sk-standalone-item > a[aria-current="page"],
+body:not(.dark) .sk-standalone-item > .fi-sidebar-item-button[aria-current="page"] {
+    background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    box-shadow: 0 4px 12px -2px rgba(2, 132, 199, 0.5) !important;
+}
+
+html body .sk-standalone-item > a[aria-current="page"] *,
+html body .sk-standalone-item > a[aria-current="true"] *,
+html body .sk-standalone-item > .fi-sidebar-item-button[aria-current="page"] *,
+html body .sk-standalone-item > .fi-sidebar-item-button.fi-active *,
+body:not(.dark) .sk-standalone-item > a[aria-current="page"] * {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    stroke: #ffffff !important;
+}
 
 /* ═══════════════════════════════════════════════════════
    15. SIDEBAR — FOOTER
    ═══════════════════════════════════════════════════════ */
+
+html body .fi-sidebar-footer,
+body:not(.dark) .fi-sidebar-footer,
+.fi-sidebar-footer {
+    background-color: #0a1128 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
 
 .fi-sidebar-item-badge {
     background-color: rgba(255, 255, 255, 0.15) !important;
     color: #ffffff !important;
 }
 
-.fi-sidebar-footer {
-    background-color: #0a1128 !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
-}
-
 .fi-main-ctn, .fi-main { --sidebar-width: 15rem !important; }
 
 /* ═══════════════════════════════════════════════════════
-   16. STATS GRID
+   16. SIDEBAR — NUCLEAR LABEL FIX (LIGHT MODE)
+   ═══════════════════════════════════════════════════════ */
+
+html body .fi-sidebar .fi-sidebar-item-label,
+html body .fi-sidebar .fi-sidebar-group-label,
+html body .fi-sidebar a span,
+html body .fi-sidebar button span,
+body:not(.dark) .fi-sidebar .fi-sidebar-item-label,
+body:not(.dark) .fi-sidebar .fi-sidebar-group-label,
+body:not(.dark) .fi-sidebar a span,
+body:not(.dark) .fi-sidebar button span {
+    color: #cbd5e1 !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
+}
+
+html body .fi-sidebar [aria-current="page"] .fi-sidebar-item-label,
+html body .fi-sidebar .fi-sidebar-item-button.fi-active .fi-sidebar-item-label,
+html body .fi-sidebar-group:has([aria-current="page"]) .fi-sidebar-group-label,
+html body .sk-standalone-item > a[aria-current="page"] .fi-sidebar-item-label,
+body:not(.dark) .fi-sidebar [aria-current="page"] .fi-sidebar-item-label {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   17. SIDEBAR — HOVER STATE (FIX LIGHT MODE WHITE BG)
+   Filament light mode pakai hover bg gray-100 yang tidak
+   cocok dengan sidebar dark. Override dengan specificity
+   lebih tinggi via html body prefix.
+   ═══════════════════════════════════════════════════════ */
+
+html body .fi-sidebar .fi-sidebar-item-button:hover,
+html body .fi-sidebar .fi-sidebar-item-btn:hover,
+html body .fi-sidebar a.fi-sidebar-item-button:hover,
+html body .fi-sidebar .fi-sidebar-group-btn:hover,
+html body .fi-sidebar .fi-sidebar-group-button:hover,
+html body .fi-sidebar .fi-sidebar-group-trigger:hover,
+html body .fi-sidebar-group-items li a:hover,
+html body .fi-sidebar-group-items li > a:hover,
+html body .fi-sidebar-group-items .fi-sidebar-item-button:hover,
+html body .sk-standalone-item > a:hover,
+html body .sk-standalone-item > .fi-sidebar-item-button:hover,
+body:not(.dark) .fi-sidebar .fi-sidebar-item-button:hover,
+body:not(.dark) .fi-sidebar .fi-sidebar-group-btn:hover,
+body:not(.dark) .fi-sidebar a.fi-sidebar-item-button:hover {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html body .fi-sidebar .fi-sidebar-item-button:hover *,
+html body .fi-sidebar .fi-sidebar-group-btn:hover *,
+html body .fi-sidebar .fi-sidebar-group-items li a:hover *,
+html body .sk-standalone-item > a:hover *,
+html body .sk-standalone-item > .fi-sidebar-item-button:hover *,
+body:not(.dark) .fi-sidebar .fi-sidebar-item-button:hover *,
+body:not(.dark) .fi-sidebar .fi-sidebar-group-btn:hover * {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html body .fi-sidebar .fi-sidebar-item-button:hover svg,
+html body .fi-sidebar .fi-sidebar-group-btn:hover svg,
+html body .fi-sidebar .fi-sidebar-group-items li a:hover svg,
+html body .sk-standalone-item > a:hover svg,
+body:not(.dark) .fi-sidebar .fi-sidebar-item-button:hover svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+html body .fi-sidebar .fi-sidebar-item:hover > .fi-sidebar-item-button,
+html body .fi-sidebar .fi-sidebar-item:hover > a,
+body:not(.dark) .fi-sidebar .fi-sidebar-item:hover > .fi-sidebar-item-button,
+body:not(.dark) .fi-sidebar .fi-sidebar-item:hover > a {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+}
+
+html body .fi-sidebar .fi-sidebar-item-button:focus,
+html body .fi-sidebar .fi-sidebar-item-button:focus-visible,
+html body .fi-sidebar .fi-sidebar-group-btn:focus,
+body:not(.dark) .fi-sidebar .fi-sidebar-item-button:focus {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+    outline: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   18. SIDEBAR — SUB-MENU ITEMS (FIX LIGHT MODE)
+   ═══════════════════════════════════════════════════════ */
+
+html body .fi-sidebar-group-items,
+html body .fi-sidebar-group-items li,
+html body .fi-sidebar-group-items > li,
+html body .fi-sidebar-group-items .fi-sidebar-item {
+    background-color: transparent !important;
+}
+
+html body .fi-sidebar-group-items a,
+html body .fi-sidebar-group-items .fi-sidebar-item-button,
+html body .fi-sidebar-group-items .fi-sidebar-item-btn,
+body:not(.dark) .fi-sidebar-group-items a,
+body:not(.dark) .fi-sidebar-group-items .fi-sidebar-item-button {
+    background-color: transparent !important;
+    color: #cbd5e1 !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
+}
+
+html body .fi-sidebar-group-items a:hover,
+html body .fi-sidebar-group-items .fi-sidebar-item-button:hover,
+html body .fi-sidebar-group-items .fi-sidebar-item-btn:hover,
+body:not(.dark) .fi-sidebar-group-items a:hover,
+body:not(.dark) .fi-sidebar-group-items .fi-sidebar-item-button:hover {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html body .fi-sidebar-group-items a:hover *,
+html body .fi-sidebar-group-items .fi-sidebar-item-button:hover *,
+html body .fi-sidebar-group-items a:hover svg,
+html body .fi-sidebar-group-items .fi-sidebar-item-button:hover svg {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   19. SIDEBAR — ACTIVE SUB-ITEM (GRADIENT BIRU)
+   Filament 5 kadang tidak set aria-current="page" pada
+   sub-item, tapi pakai class / attribute lain. Cover semua.
+   ═══════════════════════════════════════════════════════ */
+
+/* Sub-item aktif — cover semua kemungkinan selector */
+html body .fi-sidebar-group-items a[aria-current="page"],
+html body .fi-sidebar-group-items a[aria-current="true"],
+html body .fi-sidebar-group-items .fi-sidebar-item-button[aria-current="page"],
+html body .fi-sidebar-group-items .fi-sidebar-item-button[aria-current="true"],
+html body .fi-sidebar-group-items .fi-sidebar-item-active > a,
+html body .fi-sidebar-group-items .fi-sidebar-item-active > .fi-sidebar-item-button,
+html body .fi-sidebar-group-items li.fi-sidebar-item-active a,
+html body .fi-sidebar-group-items a.fi-active,
+html body .fi-sidebar-group-items .fi-sidebar-item-button.fi-active,
+html body .fi-sidebar-group-items a[data-active="true"],
+html body .fi-sidebar-group-items a[data-active],
+html body .fi-sidebar-group-items li[data-active="true"] > a,
+html body .fi-sidebar-group-items li[data-active] > a,
+body:not(.dark) .fi-sidebar-group-items a[aria-current="page"],
+body:not(.dark) .fi-sidebar-group-items .fi-sidebar-item-active > a {
+    background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%) !important;
+    background-color: transparent !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    box-shadow: 0 4px 12px -2px rgba(2, 132, 199, 0.5) !important;
+    border: none !important;
+}
+
+/* Semua konten jadi putih saat sub-item aktif */
+html body .fi-sidebar-group-items a[aria-current="page"],
+html body .fi-sidebar-group-items a[aria-current="page"] *,
+html body .fi-sidebar-group-items a[aria-current="page"] svg,
+html body .fi-sidebar-group-items a[aria-current="true"],
+html body .fi-sidebar-group-items a[aria-current="true"] *,
+html body .fi-sidebar-group-items a[aria-current="true"] svg,
+html body .fi-sidebar-group-items .fi-sidebar-item-button[aria-current="page"],
+html body .fi-sidebar-group-items .fi-sidebar-item-button[aria-current="page"] *,
+html body .fi-sidebar-group-items .fi-sidebar-item-button[aria-current="page"] svg,
+html body .fi-sidebar-group-items .fi-sidebar-item-active > a,
+html body .fi-sidebar-group-items .fi-sidebar-item-active > a *,
+html body .fi-sidebar-group-items .fi-sidebar-item-active > a svg,
+html body .fi-sidebar-group-items .fi-sidebar-item-active > .fi-sidebar-item-button,
+html body .fi-sidebar-group-items .fi-sidebar-item-active > .fi-sidebar-item-button *,
+html body .fi-sidebar-group-items .fi-sidebar-item-active > .fi-sidebar-item-button svg,
+html body .fi-sidebar-group-items a.fi-active,
+html body .fi-sidebar-group-items a.fi-active *,
+html body .fi-sidebar-group-items a.fi-active svg {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+/* Hover state untuk sub-item aktif — tetap biru lebih gelap */
+html body .fi-sidebar-group-items a[aria-current="page"]:hover,
+html body .fi-sidebar-group-items .fi-sidebar-item-active > a:hover,
+html body .fi-sidebar-group-items a.fi-active:hover {
+    background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
+}
+
+/* Label sub-item aktif — bold */
+html body .fi-sidebar-group-items a[aria-current="page"] .fi-sidebar-item-label,
+html body .fi-sidebar-group-items .fi-sidebar-item-active > a .fi-sidebar-item-label,
+html body .fi-sidebar-group-items a.fi-active .fi-sidebar-item-label {
+    font-weight: 600 !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   20. STATS GRID
    ═══════════════════════════════════════════════════════ */
 
 .sk-stats-grid {
@@ -831,7 +1100,7 @@ body .fi-sidebar-header,
 }
 
 /* ═══════════════════════════════════════════════════════
-   17. CHART WIDGET
+   21. CHART WIDGET
    ═══════════════════════════════════════════════════════ */
 
 .fi-wi-chart {
@@ -869,7 +1138,7 @@ body .fi-sidebar-header,
 }
 
 /* ═══════════════════════════════════════════════════════
-   18. CHART ENTRANCE ANIMATION
+   22. CHART ENTRANCE ANIMATION
    ═══════════════════════════════════════════════════════ */
 
 @keyframes sk-chart-fade-in {
@@ -889,17 +1158,8 @@ body .fi-sidebar-header,
 .sk-stat-card { animation: sk-chart-fade-in 0.5s ease-out backwards; }
 
 /* ═══════════════════════════════════════════════════════
-   19. SIDEBAR — FALLBACK RESET
-   (override rule lama yang tidak match class Filament 5)
+   23. FALLBACK RESET
    ═══════════════════════════════════════════════════════ */
-
-.fi-sidebar-group > div:first-child,
-.fi-sidebar-group > button:first-child,
-.fi-sidebar-group-header,
-.fi-sidebar-group-button,
-.fi-sidebar-group-trigger {
-    /* Sudah ditangani oleh rule #10 */
-}
 
 .fi-sidebar-group > button.fi-sidebar-group-collapse-btn {
     all: unset !important;
@@ -907,8 +1167,7 @@ body .fi-sidebar-header,
 }
 
 /* ═══════════════════════════════════════════════════════
-   20. PAGE TRANSITION
-   (dipicu via JS class toggle, aman di-replay pada navigasi)
+   24. PAGE TRANSITION
    ═══════════════════════════════════════════════════════ */
 
 @keyframes sk-page-enter {
@@ -926,7 +1185,6 @@ body .fi-sidebar-header,
     animation: sk-page-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Hormati preferensi user */
 @media (prefers-reduced-motion: reduce) {
     .fi-main-ctn.sk-page-enter {
         animation: none !important;

@@ -245,7 +245,7 @@
                         <div class="sk-about-card-rows">
                             <div class="sk-about-card-row">
                                 <span>Instansi</span>
-                                <strong>UPT Bandar Udara Mutiara</strong>
+                                <strong>PPID Bandar Udara Mutiara Sis Al-Jufri Palu</strong>
                             </div>
                             <div class="sk-about-card-row">
                                 <span>Kode Bandara</span>
@@ -253,7 +253,7 @@
                             </div>
                             <div class="sk-about-card-row">
                                 <span>Framework</span>
-                                <strong>Laravel 13 + Filament v5</strong>
+                                <strong>Laravel 13 + Filament v5 + Custom JS</strong>
                             </div>
                             <div class="sk-about-card-row">
                                 <span>Database</span>
@@ -297,11 +297,11 @@
                 <div class="sk-footer-left">
                     <div class="sk-footer-brand">Mutiara SkyTrack</div>
                     <div class="sk-footer-copy">
-                        © 2024–{{ date('Y') }} UPT Bandara Mutiara — Palu. All rights reserved.
+                        © 2026–{{ date('Y') }} PPID Kantor UPBU Kelas 1 Bandara Mutiara Sis Al-Jufri — Palu. All rights reserved.
                     </div>
                 </div>
                 <div class="sk-footer-right">
-                    <span>Sistem Analitik Lalu Lintas Udara</span>
+                    <span>Sistem Analitik dan Pelaporan Lalu Lintas Udara Bandar Internasional Mutiara Sis Al-Jufri Palu</span>
                 </div>
             </div>
         </footer>
