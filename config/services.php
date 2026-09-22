@@ -28,6 +28,14 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'google_sheets' => [
+        'credentials_path' => env('GOOGLE_SHEETS_CREDENTIALS')
+            ? base_path(env('GOOGLE_SHEETS_CREDENTIALS'))
+            : null,
+        'spreadsheet_id'   => env('GOOGLE_SHEETS_SPREADSHEET_ID'),
+        'sheet_names'      => array_map('trim', explode(',', env('GOOGLE_SHEETS_SHEET_NAMES', 'JANUARI'))),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
