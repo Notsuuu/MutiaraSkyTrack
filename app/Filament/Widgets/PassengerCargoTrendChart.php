@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\FlightTraffic;
+use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 
@@ -18,26 +19,77 @@ class PassengerCargoTrendChart extends ChartWidget
 
     protected function getData(): array
     {
-        $tahun  = $this->filters['tahun'] ?? '2026';
-        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        $tgl   = filled($this->filters['tgl'] ?? null)   ? $this->filters['tgl'] : null;
+        $bulan = filled($this->filters['bulan'] ?? null) ? (int) $this->filters['bulan'] : null;
+        $tahun = filled($this->filters['tahun'] ?? null) ? (int) $this->filters['tahun'] : 2026;
 
-        $monthlyData = FlightTraffic::whereYear('schedule_date', $tahun)
-            ->selectRaw('
-                MONTH(schedule_date) as bulan,
-                SUM(COALESCE(pax_adult, 0) + COALESCE(pax_child, 0) + COALESCE(pax_infant, 0)) as total_penumpang,
-                SUM(COALESCE(cargo_kg, 0)) as total_kargo
-            ')
-            ->groupBy('bulan')
-            ->get()
-            ->keyBy('bulan');
+        $baseQuery = FlightTraffic::query()
+            ->when($tgl, fn ($q) => $q->whereDate('schedule_date', $tgl))
+            ->when(! $tgl && $bulan, fn ($q) => $q->whereMonth('schedule_date', $bulan))
+            ->when(! $tgl && $tahun, fn ($q) => $q->whereYear('schedule_date', $tahun));
 
-        $paxData   = [];
-        $cargoData = [];
+        // Jika filter Bulan aktif: Tampilkan data harian
+        if ($bulan && ! $tgl) {
+            $daysInMonth = Carbon::create($tahun, $bulan, 1)->daysInMonth;
+            $labels = [];
+            for ($d = 1; $d <= $daysInMonth; $d++) {
+                $labels[] = (string) $d;
+            }
 
-        for ($m = 1; $m <= 12; $m++) {
-            $row = $monthlyData->get($m);
-            $paxData[]   = (int) ($row->total_penumpang ?? 0);
-            $cargoData[] = (float) ($row->total_kargo ?? 0);
+            $dailyData = (clone $baseQuery)
+                ->selectRaw('
+                    DAY(schedule_date) as hari,
+                    SUM(COALESCE(pax_adult, 0) + COALESCE(pax_child, 0) + COALESCE(pax_infant, 0)) as total_penumpang,
+                    SUM(COALESCE(cargo_kg, 0)) as total_kargo
+                ')
+                ->groupBy('hari')
+                ->get()
+                ->keyBy('hari');
+
+            $paxData   = [];
+            $cargoData = [];
+
+            for ($d = 1; $d <= $daysInMonth; $d++) {
+                $row = $dailyData->get($d);
+                $paxData[]   = (int) ($row->total_penumpang ?? 0);
+                $cargoData[] = (float) ($row->total_kargo ?? 0);
+            }
+        }
+        // Jika filter Tanggal aktif
+        elseif ($tgl) {
+            $labels = [Carbon::parse($tgl)->translatedFormat('d M Y')];
+            $single = (clone $baseQuery)
+                ->selectRaw('
+                    SUM(COALESCE(pax_adult, 0) + COALESCE(pax_child, 0) + COALESCE(pax_infant, 0)) as total_penumpang,
+                    SUM(COALESCE(cargo_kg, 0)) as total_kargo
+                ')
+                ->first();
+
+            $paxData   = [(int) ($single->total_penumpang ?? 0)];
+            $cargoData = [(float) ($single->total_kargo ?? 0)];
+        }
+        // Default (Semua Bulan / Reset): Sumbu X 12 Bulan (Jan - Des)
+        else {
+            $labels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+            $monthlyData = (clone $baseQuery)
+                ->selectRaw('
+                    MONTH(schedule_date) as bulan,
+                    SUM(COALESCE(pax_adult, 0) + COALESCE(pax_child, 0) + COALESCE(pax_infant, 0)) as total_penumpang,
+                    SUM(COALESCE(cargo_kg, 0)) as total_kargo
+                ')
+                ->groupBy('bulan')
+                ->get()
+                ->keyBy('bulan');
+
+            $paxData   = [];
+            $cargoData = [];
+
+            for ($m = 1; $m <= 12; $m++) {
+                $row = $monthlyData->get($m);
+                $paxData[]   = (int) ($row->total_penumpang ?? 0);
+                $cargoData[] = (float) ($row->total_kargo ?? 0);
+            }
         }
 
         return [
@@ -50,7 +102,7 @@ class PassengerCargoTrendChart extends ChartWidget
                     'fill'            => true,
                     'tension'         => 0.3,
                     'yAxisID'         => 'y',
-                    'pointRadius'     => 3,
+                    'pointRadius'     => count($labels) > 20 ? 1.5 : 3,
                     'borderWidth'     => 2,
                 ],
                 [
@@ -61,11 +113,11 @@ class PassengerCargoTrendChart extends ChartWidget
                     'fill'            => true,
                     'tension'         => 0.3,
                     'yAxisID'         => 'y1',
-                    'pointRadius'     => 3,
+                    'pointRadius'     => count($labels) > 20 ? 1.5 : 3,
                     'borderWidth'     => 2,
                 ],
             ],
-            'labels' => $months,
+            'labels' => $labels,
         ];
     }
 
@@ -77,8 +129,10 @@ class PassengerCargoTrendChart extends ChartWidget
     protected function getOptions(): array
     {
         return [
+            'responsive'          => true,
+            'maintainAspectRatio' => false,
             'animation' => [
-                'duration' => 1500,
+                'duration' => 1200,
                 'easing'   => 'easeOutQuart',
             ],
             'plugins' => [

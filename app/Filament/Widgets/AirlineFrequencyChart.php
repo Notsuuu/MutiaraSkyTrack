@@ -22,10 +22,14 @@ class AirlineFrequencyChart extends ChartWidget
 
     protected function getData(): array
     {
-        $tahun = $this->filters['tahun'] ?? '2026';
+        $tgl   = filled($this->filters['tgl'] ?? null)   ? $this->filters['tgl'] : null;
+        $bulan = filled($this->filters['bulan'] ?? null) ? $this->filters['bulan'] : null;
+        $tahun = filled($this->filters['tahun'] ?? null) ? $this->filters['tahun'] : '2026';
 
         $data = FlightTraffic::with('airline')
-            ->whereYear('schedule_date', $tahun)
+            ->when($tgl, fn ($q) => $q->whereDate('schedule_date', $tgl))
+            ->when(! $tgl && $bulan, fn ($q) => $q->whereMonth('schedule_date', $bulan))
+            ->when(! $tgl && $tahun, fn ($q) => $q->whereYear('schedule_date', $tahun))
             ->selectRaw('airline_id, count(*) as total')
             ->groupBy('airline_id')
             ->orderByDesc('total')
@@ -36,7 +40,7 @@ class AirlineFrequencyChart extends ChartWidget
             'datasets' => [
                 [
                     'label'           => 'Jumlah Flight',
-                    'data'            => $data->pluck('total')->toArray(),
+                    'data'            => $data->pluck('total')->map(fn ($v) => (int) $v)->toArray(),
                     'backgroundColor' => '#6366f1',
                     'borderRadius'    => 6,
                     'maxBarThickness' => 48,
@@ -54,8 +58,10 @@ class AirlineFrequencyChart extends ChartWidget
     protected function getOptions(): array
     {
         return [
+            'responsive'          => true,
+            'maintainAspectRatio' => false,
             'animation' => [
-                'duration' => 1200,
+                'duration' => 1000,
                 'easing'   => 'easeOutQuart',
             ],
             'plugins' => [

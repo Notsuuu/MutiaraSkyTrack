@@ -22,10 +22,14 @@ class PopularAirlineShareChart extends ChartWidget
 
     protected function getData(): array
     {
-        $tahun = $this->filters['tahun'] ?? '2026';
+        $tgl   = filled($this->filters['tgl'] ?? null)   ? $this->filters['tgl'] : null;
+        $bulan = filled($this->filters['bulan'] ?? null) ? $this->filters['bulan'] : null;
+        $tahun = filled($this->filters['tahun'] ?? null) ? $this->filters['tahun'] : '2026';
 
         $records = FlightTraffic::with('airline')
-            ->whereYear('schedule_date', $tahun)
+            ->when($tgl, fn ($q) => $q->whereDate('schedule_date', $tgl))
+            ->when(! $tgl && $bulan, fn ($q) => $q->whereMonth('schedule_date', $bulan))
+            ->when(! $tgl && $tahun, fn ($q) => $q->whereYear('schedule_date', $tahun))
             ->selectRaw('
                 airline_id,
                 SUM(COALESCE(pax_adult, 0) + COALESCE(pax_child, 0) + COALESCE(pax_infant, 0)) as total_penumpang
@@ -97,11 +101,13 @@ class PopularAirlineShareChart extends ChartWidget
     protected function getOptions(): array
     {
         return [
-            'cutout' => '65%',
+            'responsive'          => true,
+            'maintainAspectRatio' => false,
+            'cutout'              => '65%',
             'animation' => [
                 'animateRotate' => true,
                 'animateScale'  => true,
-                'duration'      => 1600,
+                'duration'      => 1200,
                 'easing'        => 'easeOutQuart',
             ],
             'plugins' => [

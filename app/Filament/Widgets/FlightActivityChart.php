@@ -22,15 +22,39 @@ class FlightActivityChart extends ChartWidget
 
     protected function getData(): array
     {
-        $tahun = $this->filters['tahun'] ?? '2026';
+        $tgl   = filled($this->filters['tgl'] ?? null)   ? $this->filters['tgl'] : null;
+        $bulan = filled($this->filters['bulan'] ?? null) ? $this->filters['bulan'] : null;
+        $tahun = filled($this->filters['tahun'] ?? null) ? $this->filters['tahun'] : '2026';
+
+        $query = FlightTraffic::query()
+            ->when($tgl, fn ($q) => $q->whereDate('schedule_date', $tgl))
+            ->when(! $tgl && $bulan, fn ($q) => $q->whereMonth('schedule_date', $bulan))
+            ->when(! $tgl && $tahun, fn ($q) => $q->whereYear('schedule_date', $tahun));
+
+        $rawCounts = (clone $query)
+            ->selectRaw('activity_type, count(*) as total')
+            ->groupBy('activity_type')
+            ->pluck('total', 'activity_type')
+            ->toArray();
 
         $types  = ['Berjadwal', 'Extra Flight', 'Tidak Berjadwal', 'Bukan Niaga', 'Perintis', 'Haji', 'Militer', 'Lainnya'];
         $counts = [];
 
         foreach ($types as $type) {
-            $counts[] = FlightTraffic::whereYear('schedule_date', $tahun)
-                ->where('activity_type', $type)
-                ->count();
+            $counts[] = (int) ($rawCounts[$type] ?? 0);
+        }
+
+        if (array_sum($counts) === 0) {
+            return [
+                'datasets' => [
+                    [
+                        'data'            => [1],
+                        'backgroundColor' => ['#e2e8f0'],
+                        'borderWidth'     => 0,
+                    ],
+                ],
+                'labels' => ['Belum Ada Data'],
+            ];
         }
 
         return [
@@ -54,11 +78,13 @@ class FlightActivityChart extends ChartWidget
     protected function getOptions(): array
     {
         return [
-            'cutout' => '65%',
+            'responsive'          => true,
+            'maintainAspectRatio' => false,
+            'cutout'              => '65%',
             'animation' => [
                 'animateRotate' => true,
                 'animateScale'  => true,
-                'duration'      => 1600,
+                'duration'      => 1200,
                 'easing'        => 'easeOutQuart',
             ],
             'plugins' => [
