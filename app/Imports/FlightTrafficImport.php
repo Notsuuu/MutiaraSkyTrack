@@ -10,45 +10,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\Importable;
-use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
-use Maatwebsite\Excel\Concerns\SkipsErrors;
-use Maatwebsite\Excel\Concerns\SkipsFailures;
-use Maatwebsite\Excel\Concerns\SkipsOnError;
-use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\ToCollection;
-use Maatwebsite\Excel\Concerns\WithBatchInserts;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
-/**
- * Import data lalu lintas penerbangan dari file rekap operasional PLW.
- *
- * Setiap pemanggilan Import akan menghasilkan UUID batch_id baru.
- */
-class FlightTrafficImport implements
-    ToCollection,
-    WithHeadingRow,
-    WithValidation,
-    WithBatchInserts,
-    WithChunkReading,
-    SkipsEmptyRows,
-    SkipsOnError,
-    SkipsOnFailure
+class FlightTrafficImport implements WithMultipleSheets
 {
-    use Importable, SkipsErrors, SkipsFailures;
+    use Importable;
 
+    private string $batchId;
     private int $successCount = 0;
     private int $skipCount = 0;
     private int $autoCreatedAirlineCount = 0;
-
-    /** @var array<string,int> cache nama maskapai (lowercase) → airline_id */
-    private array $airlineCache = [];
-
-    /** UUID unik untuk batch import ini */
-    private string $batchId;
-
-    /** Detail error per baris untuk reporting ke user */
     private array $rowErrors = [];
 
     public function __construct()
@@ -56,214 +28,166 @@ class FlightTrafficImport implements
         $this->batchId = (string) Str::uuid();
     }
 
+    public function sheets(): array
+    {
+        $monthSheets = [
+            'JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI',
+            'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER',
+        ];
+
+        $sheetImports = [];
+        foreach ($monthSheets as $sheetName) {
+            $sheetImports[$sheetName] = new FlightTrafficMonthSheetImport($this);
+        }
+
+        return $sheetImports;
+    }
+
+    public function recordSuccess(): void { $this->successCount++; }
+    public function recordSkip(int $row, string $message): void {
+        $this->skipCount++;
+        $this->rowErrors[] = ['row' => $row, 'message' => $message];
+    }
+    public function recordAutoCreatedAirline(): void { $this->autoCreatedAirlineCount++; }
+
+    public function getSuccessCount(): int { return $this->successCount; }
+    public function getSkipCount(): int { return $this->skipCount; }
+    public function getAutoCreatedAirlineCount(): int { return $this->autoCreatedAirlineCount; }
+    public function getBatchId(): string { return $this->batchId; }
+    public function getRowErrors(): array { return $this->rowErrors; }
+}
+
+/**
+ * Class pembaca sheet bulanan (mulai baris 11, indeks A-AA)
+ */
+class FlightTrafficMonthSheetImport implements ToCollection
+{
+    private FlightTrafficImport $parent;
+    private array $airlineCache = [];
+
+    public function __construct(FlightTrafficImport $parent)
+    {
+        $this->parent = $parent;
+
+        foreach (Airline::all() as $a) {
+            $this->airlineCache[Str::lower(trim($a->brand_name))] = $a;
+        }
+    }
+
     public function collection(Collection $rows): void
     {
-        // Disable Spatie Activity Log per-record selama import massal.
-        activity()->withoutLogs(function () use ($rows) {
-            foreach ($rows as $index => $row) {
-                $rowNumber = $index + 2;
+        // Data dimulai dari baris 11 (indeks baris ke-10 pada collection 0-based)
+        $dataRows = $rows->slice(10);
 
-                try {
-                    $airline = $this->resolveOrCreateAirline($row['operator_maskapai'] ?? null);
+        foreach ($dataRows as $index => $row) {
+            $rowNumber = $index + 11;
 
-                    if (! $airline) {
-                        $this->skipCount++;
-                        $this->rowErrors[] = [
-                            'row'     => $rowNumber,
-                            'message' => 'Nama maskapai kosong',
-                        ];
-                        Log::warning('Import FlightTraffic: nama maskapai kosong, baris dilewati.', [
-                            'row' => $rowNumber,
-                        ]);
-                        continue;
-                    }
+            $get = fn (int $idx) => trim((string) ($row[$idx] ?? ''));
 
-                    $scheduleDate = $this->parseDate($row['tgl_jadwal'] ?? null);
-                    $scheduleTime = $this->parseTime($row['waktu_jadwal'] ?? null);
-                    $actualDate   = $this->parseDate($row['tgl_aktual'] ?? null);
-                    $actualTime   = $this->parseTime($row['waktu_aktual'] ?? null);
+            $airlineName = $get(8);  // Kolom I
+            $flightNo    = $get(13); // Kolom N
+            $schedDate   = $get(1);  // Kolom B
 
-                    $paxAdult  = (int) ($row['pax_dewasa'] ?? 0);
-                    $paxChild  = (int) ($row['pax_anak'] ?? 0);
-                    $paxInfant = (int) ($row['pax_bayi'] ?? 0);
-
-                    $this->assertTotalPaxConsistency($row, $paxAdult, $paxChild, $paxInfant, $rowNumber);
-
-                    FlightTraffic::create([
-                        'import_batch_id' => $this->batchId,
-
-                        'airline_id' => $airline->id,
-                        'created_by' => Auth::id(),
-
-                        'schedule_date' => $scheduleDate,
-                        'schedule_time' => $scheduleTime,
-                        'actual_date'   => $actualDate,
-                        'actual_time'   => $actualTime,
-
-                        'flight_number'         => strtoupper(trim((string) ($row['no_penerbangan'] ?? ''))),
-                        'aircraft_type'         => filled($row['tipe_armada'] ?? null)
-                            ? strtoupper(trim((string) $row['tipe_armada']))
-                            : null,
-                        'aircraft_registration' => filled($row['registrasi'] ?? null)
-                            ? strtoupper(trim((string) $row['registrasi']))
-                            : null,
-                        'seat_capacity'         => (int) ($row['kapasitas'] ?? 0),
-
-                        'flight_status' => $this->normalizeStatus((string) ($row['status'] ?? '')),
-                        'activity_type' => $this->normalizeActivity((string) ($row['kegiatan'] ?? '')),
-                        'coverage'      => $this->normalizeCoverage((string) ($row['cakupan'] ?? '')),
-                        'movement'      => $this->normalizeMovement((string) ($row['pergerakan'] ?? '')),
-
-                        'origin_iata'      => strtoupper(trim((string) ($row['asal'] ?? ''))),
-                        'destination_iata' => strtoupper(trim((string) ($row['tujuan'] ?? ''))),
-
-                        'delay_category' => $this->nullableTrim($row['kategori_delay'] ?? null),
-                        'delay_reason'   => $this->nullableTrim($row['keterangan_delay'] ?? null),
-
-                        'pax_adult'  => $paxAdult,
-                        'pax_child'  => $paxChild,
-                        'pax_infant' => $paxInfant,
-
-                        'transit_pax_adult'  => (int) ($row['transit_dewasa'] ?? 0),
-                        'transit_pax_child'  => (int) ($row['transit_anak'] ?? 0),
-                        'transit_pax_infant' => (int) ($row['transit_bayi'] ?? 0),
-
-                        'baggage_kg' => (float) ($row['bagasi_kg'] ?? 0),
-                        'cargo_kg'   => (float) ($row['kargo_kg'] ?? 0),
-                        'mail_kg'    => (float) ($row['pos_kg'] ?? 0),
-                    ]);
-
-                    $this->successCount++;
-
-                } catch (\Throwable $e) {
-                    $this->skipCount++;
-                    $this->rowErrors[] = [
-                        'row'     => $rowNumber,
-                        'message' => $e->getMessage(),
-                    ];
-                    Log::error("Import FlightTraffic: error pada baris {$rowNumber}", [
-                        'error' => $e->getMessage(),
-                    ]);
-                }
+            // Abaikan baris template kosong di bagian bawah sheet
+            if (($airlineName === '' || $airlineName === '-') && ($flightNo === '' || $flightNo === '-')) {
+                continue;
             }
-        });
-    }
 
-    // ──────────────────────────────────────
-    // Validasi Heading Row
-    // ──────────────────────────────────────
+            if ($airlineName === '' || $airlineName === '-' || $schedDate === '') {
+                $this->parent->recordSkip($rowNumber, 'Data maskapai atau tanggal jadwal tidak lengkap');
+                continue;
+            }
 
-    public function rules(): array
-    {
-        return [
-            'tgl_jadwal'        => ['required'],
-            'operator_maskapai' => ['required', 'string', 'max:255'],
-            'no_penerbangan'    => ['required'],
-            'tipe_armada'       => ['nullable', 'string', 'max:20'],
-            'asal'              => ['required', 'string', 'max:20'],
-            'tujuan'            => ['required', 'string', 'max:20'],
-            'pergerakan'        => ['required'],
-            'kegiatan'          => ['required'],
-            'cakupan'           => ['required'],
-            'status'            => ['required'],
-            'pax_dewasa'        => ['nullable', 'numeric', 'min:0'],
-            'pax_anak'          => ['nullable', 'numeric', 'min:0'],
-            'pax_bayi'          => ['nullable', 'numeric', 'min:0'],
-            'transit_dewasa'    => ['nullable', 'numeric', 'min:0'],
-            'transit_anak'      => ['nullable', 'numeric', 'min:0'],
-            'transit_bayi'      => ['nullable', 'numeric', 'min:0'],
-            'bagasi_kg'         => ['nullable', 'numeric', 'min:0'],
-            'kargo_kg'          => ['nullable', 'numeric', 'min:0'],
-            'pos_kg'            => ['nullable', 'numeric', 'min:0'],
-            'kapasitas'         => ['nullable', 'numeric', 'min:0'],
-        ];
-    }
+            try {
+                $airline = $this->resolveOrCreateAirline($airlineName, $get(9));
 
-    public function customValidationMessages(): array
-    {
-        return [
-            'tgl_jadwal.required'        => 'Kolom "Tgl Jadwal" wajib diisi.',
-            'operator_maskapai.required' => 'Kolom "Operator / Maskapai" wajib diisi.',
-            'no_penerbangan.required'    => 'Kolom "No. Penerbangan" wajib diisi.',
-            'tipe_armada.required'       => 'Kolom "Tipe Armada" wajib diisi.',
-            'asal.required'              => 'Kolom "Asal" wajib diisi.',
-            'tujuan.required'            => 'Kolom "Tujuan" wajib diisi.',
-            'pergerakan.required'        => 'Kolom "Pergerakan" wajib diisi (isi D atau A).',
-            'kegiatan.required'          => 'Kolom "Kegiatan" wajib diisi.',
-            'cakupan.required'           => 'Kolom "Cakupan" wajib diisi.',
-            'status.required'            => 'Kolom "Status" wajib diisi.',
-        ];
-    }
+                $scheduleDate = $this->parseDate($row[1] ?? null);
+                $actualDate   = $this->parseDate($row[2] ?? null);
+                $scheduleTime = $this->parseTime($row[3] ?? null);
+                $actualTime   = $this->parseTime($row[4] ?? null);
 
-    // ──────────────────────────────────────
-    // Performance Settings
-    // ──────────────────────────────────────
+                if (! $scheduleTime) {
+                    $scheduleTime = $actualTime ?: '00:00:00';
+                }
 
-    public function batchSize(): int
-    {
-        return 200;
-    }
+                $flightNumber = strtoupper($flightNo);
+                if ($flightNumber === '' || $flightNumber === '-') {
+                    $flightNumber = strtoupper($get(14)) ?: 'NO-FLIGHT';
+                }
 
-    public function chunkSize(): int
-    {
-        return 500;
-    }
+                FlightTraffic::updateOrCreate(
+                    [
+                        'schedule_date' => $scheduleDate,
+                        'flight_number' => $flightNumber,
+                        'movement'      => $this->normalizeMovement($get(17)),
+                        'airline_id'    => $airline->id,
+                        'schedule_time' => $scheduleTime,
+                    ],
+                    [
+                        'import_batch_id'       => $this->parent->getBatchId(),
+                        'created_by'            => Auth::id() ?? 1,
+                        'actual_date'           => $actualDate,
+                        'actual_time'           => $actualTime,
+                        'aircraft_registration' => strtoupper($get(14)) ?: null,
+                        'aircraft_type'         => strtoupper($get(15)) ?: null,
+                        'seat_capacity'         => (int) ($row[16] ?? 0),
+                        'flight_status'         => $this->normalizeStatus($get(5), $get(12)),
+                        'activity_type'         => $this->normalizeActivity($get(10)),
+                        'coverage'              => $this->normalizeCoverage($get(11)),
+                        'origin_iata'           => strtoupper($get(6)) ?: 'PLW',
+                        'destination_iata'      => strtoupper($get(7)) ?: 'PLW',
+                        'delay_category'        => $get(5) ?: null,
+                        'delay_reason'          => $get(12) ?: null,
+                        'pax_adult'             => (int) ($row[18] ?? 0),
+                        'pax_child'             => (int) ($row[19] ?? 0),
+                        'pax_infant'            => (int) ($row[20] ?? 0),
+                        'transit_pax_adult'     => (int) ($row[21] ?? 0),
+                        'transit_pax_child'     => (int) ($row[22] ?? 0),
+                        'transit_pax_infant'    => (int) ($row[23] ?? 0),
+                        'baggage_kg'            => (float) ($row[24] ?? 0),
+                        'cargo_kg'              => (float) ($row[25] ?? 0),
+                        'mail_kg'               => (float) ($row[26] ?? 0),
+                    ]
+                );
 
-    // ──────────────────────────────────────
-    // Getters
-    // ──────────────────────────────────────
-
-    public function getSuccessCount(): int
-    {
-        return $this->successCount;
-    }
-
-    public function getSkipCount(): int
-    {
-        return $this->skipCount;
-    }
-
-    public function getAutoCreatedAirlineCount(): int
-    {
-        return $this->autoCreatedAirlineCount;
-    }
-
-    public function getBatchId(): string
-    {
-        return $this->batchId;
-    }
-
-    /**
-     * @return array<int, array{row:int, message:string}>
-     */
-    public function getRowErrors(): array
-    {
-        return $this->rowErrors;
-    }
-
-    // ──────────────────────────────────────
-    // Resolusi / Auto-create Maskapai
-    // ──────────────────────────────────────
-
-    private function resolveOrCreateAirline(?string $name): ?Airline
-    {
-        $name = trim((string) $name);
-
-        if (blank($name)) {
-            return null;
+                $this->parent->recordSuccess();
+            } catch (\Throwable $e) {
+                $this->parent->recordSkip($rowNumber, $e->getMessage());
+                Log::warning("Import Excel baris {$rowNumber}: {$e->getMessage()}");
+            }
         }
+    }
 
-        $cacheKey = Str::lower($name);
+    private function resolveOrCreateAirline(string $name, string $rawIcao): Airline
+    {
+        $rawIcao = strtoupper(trim($rawIcao));
+        $icao = ($rawIcao !== '' && $rawIcao !== '-' && strlen($rawIcao) <= 4) ? $rawIcao : null;
 
-        if (isset($this->airlineCache[$cacheKey])) {
-            return Airline::find($this->airlineCache[$cacheKey]);
+        $cleanName = trim((string) preg_replace('/^(pt\.|pt\s+)/i', '', trim($name)));
+        $keyName   = Str::lower($cleanName);
+        $keyExact  = Str::lower(trim($name));
+
+        if (isset($this->airlineCache[$keyExact])) return $this->airlineCache[$keyExact];
+        if (isset($this->airlineCache[$keyName]))  return $this->airlineCache[$keyName];
+
+        $airline = Airline::whereRaw('LOWER(brand_name) = ?', [$keyExact])
+            ->orWhereRaw('LOWER(brand_name) = ?', [$keyName])
+            ->first();
+
+        if (! $airline && $icao) {
+            $airlineByIcao = Airline::where('icao_code', $icao)->first();
+            if ($airlineByIcao && str_contains(Str::lower($airlineByIcao->brand_name), Str::lower(substr($cleanName, 0, 5)))) {
+                $airline = $airlineByIcao;
+            }
         }
-
-        $airline = Airline::whereRaw('LOWER(brand_name) = ?', [$cacheKey])->first();
 
         if (! $airline) {
+            if ($icao && Airline::where('icao_code', $icao)->exists()) {
+                $icao = null;
+            }
+
             $airline = Airline::create([
-                'icao_code'          => null,
+                'icao_code'          => $icao,
                 'iata_code'          => null,
                 'brand_name'         => $name,
                 'operator_name'      => $name,
@@ -271,135 +195,89 @@ class FlightTrafficImport implements
                 'operational_status' => 'beroperasi',
                 'flight_frequency'   => 0,
                 'is_auto_generated'  => true,
-                'notes'              => 'Dibuat otomatis dari import Excel pada '
-                    . now()->format('d/m/Y H:i') . '. Mohon lengkapi kode ICAO/IATA.',
+                'notes'              => 'Dibuat otomatis dari import file Excel spreadsheet ' . now()->format('d/m/Y H:i'),
             ]);
 
-            $this->autoCreatedAirlineCount++;
-
-            Log::info('Import FlightTraffic: maskapai baru dibuat otomatis.', [
-                'brand_name' => $name,
-                'airline_id' => $airline->id,
-            ]);
+            $this->parent->recordAutoCreatedAirline();
         }
 
-        $this->airlineCache[$cacheKey] = $airline->id;
+        $this->airlineCache[$keyExact] = $airline;
+        $this->airlineCache[$keyName]  = $airline;
 
         return $airline;
     }
 
-    // ──────────────────────────────────────
-    // Helper Parsing & Normalisasi
-    // ──────────────────────────────────────
-
-    private function nullableTrim(mixed $value): ?string
+    private function parseDate(mixed $v): ?string
     {
-        $value = trim((string) $value);
-        return blank($value) ? null : $value;
-    }
-
-    private function parseDate(mixed $value): ?string
-    {
-        if (blank($value)) {
-            return null;
-        }
-
+        if (blank($v)) return null;
         try {
-            if (is_numeric($value)) {
+            if (is_numeric($v)) {
                 return Carbon::instance(
-                    \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((float) $value)
+                    \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((float) $v)
                 )->toDateString();
             }
-
-            return Carbon::parse($value)->toDateString();
-        } catch (\Throwable) {
-            return null;
-        }
+            $str = trim((string) $v);
+            if (preg_match('/^(\d{1,2})-(\d{1,2})-(\d{4})$/', $str, $m)) {
+                return Carbon::createFromDate((int) $m[3], (int) $m[2], (int) $m[1])->toDateString();
+            }
+            return Carbon::parse($str)->toDateString();
+        } catch (\Throwable) { return null; }
     }
 
-    private function parseTime(mixed $value): ?string
+    private function parseTime(mixed $v): ?string
     {
-        if (blank($value)) {
-            return null;
-        }
-
+        if (blank($v)) return null;
         try {
-            if (is_numeric($value) && (float) $value < 1) {
+            if (is_numeric($v) && (float) $v < 1) {
                 return Carbon::instance(
-                    \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((float) $value)
+                    \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((float) $v)
                 )->format('H:i:s');
             }
-
-            return Carbon::parse($value)->format('H:i:s');
-        } catch (\Throwable) {
-            return null;
-        }
+            $str = str_replace(';', ':', trim((string) $v));
+            if (preg_match('/^\d{1,2}:\d{1,2}(:\d{1,2})?$/', $str)) {
+                return Carbon::parse($str)->format('H:i:s');
+            }
+            return Carbon::parse($str)->format('H:i:s');
+        } catch (\Throwable) { return null; }
     }
 
-    private function normalizeStatus(string $value): string
+    private function normalizeStatus(string $cat, string $reason = ''): string
     {
-        return match (Str::lower(trim($value))) {
-            'realisasi', 'realized', 'ontime', 'on time', 'tepat waktu' => 'Ontime',
-            'delay', 'delayed', 'terlambat'                             => 'Delay',
-            'batal', 'cancel', 'cancelled', 'dibatalkan'                => 'Cancel',
-            default                                                      => 'Ontime',
-        };
-    }
-
-    private function normalizeActivity(string $value): string
-    {
-        $normalized = Str::lower(trim($value));
-
+        $v = Str::lower($cat . ' ' . $reason);
         return match (true) {
-            str_contains($normalized, 'tidak berjadwal') || str_contains($normalized, 'unscheduled') => 'Tidak Berjadwal',
-            str_contains($normalized, 'berjadwal') || str_contains($normalized, 'scheduled')          => 'Berjadwal',
-            str_contains($normalized, 'extra')                                                        => 'Extra Flight',
-            str_contains($normalized, 'perintis') || str_contains($normalized, 'pioneer')             => 'Perintis',
-            str_contains($normalized, 'haji') || str_contains($normalized, 'hajj')                    => 'Haji',
-            str_contains($normalized, 'militer') || str_contains($normalized, 'military')             => 'Militer',
-            str_contains($normalized, 'charter')                                                       => 'Charter',
-            str_contains($normalized, 'kargo') || str_contains($normalized, 'cargo')                  => 'Kargo',
-            default                                                                                     => 'Berjadwal',
+            str_contains($v, 'cancel'), str_contains($v, 'batal') => 'Cancel',
+            str_contains($v, 'delay'), str_contains($v, 'terlambat'),
+            str_contains($v, 'manajemen'), str_contains($v, 'cuaca'),
+            str_contains($v, 'teknis'), str_contains($v, 'operasional') => 'Delay',
+            default => 'Ontime',
         };
     }
 
-    private function normalizeCoverage(string $value): string
+    private function normalizeActivity(string $v): string
     {
-        return match (Str::lower(trim($value))) {
-            'domestik', 'domestic', 'dom'           => 'Domestik',
-            'internasional', 'international', 'int' => 'Internasional',
-            default                                  => 'Domestik',
+        $v = Str::lower($v);
+        return match (true) {
+            str_contains($v, 'tidak berjadwal') => 'Tidak Berjadwal',
+            str_contains($v, 'perintis')        => 'Perintis',
+            str_contains($v, 'extra')           => 'Extra Flight',
+            str_contains($v, 'haji')            => 'Haji',
+            str_contains($v, 'militer'), str_contains($v, 'bukan niaga') => 'Militer',
+            str_contains($v, 'charter')         => 'Charter',
+            str_contains($v, 'kargo')           => 'Kargo',
+            default                             => 'Berjadwal',
         };
     }
 
-    private function normalizeMovement(string $value): string
+    private function normalizeCoverage(string $v): string
     {
-        return match (Str::lower(trim($value))) {
-            'a', 'arrival', 'datang'      => 'Arrival',
-            'd', 'departure', 'berangkat' => 'Departure',
-            default                        => 'Departure',
-        };
+        return str_contains(Str::lower($v), 'internasional') ? 'Internasional' : 'Domestik';
     }
 
-    private function assertTotalPaxConsistency(
-        $row,
-        int $paxAdult,
-        int $paxChild,
-        int $paxInfant,
-        int $rowNumber
-    ): void {
-        if (! isset($row['total_pax']) || blank($row['total_pax'])) {
-            return;
-        }
-
-        $expected = $paxAdult + $paxChild + $paxInfant;
-        $actual   = (int) $row['total_pax'];
-
-        if ($expected !== $actual) {
-            Log::warning("Import FlightTraffic: Total Pax tidak konsisten pada baris {$rowNumber}.", [
-                'total_pax_file'     => $actual,
-                'total_pax_dihitung' => $expected,
-            ]);
-        }
+    private function normalizeMovement(string $v): string
+    {
+        return match (Str::lower(trim($v))) {
+            'a', 'arrival', 'datang' => 'Arrival',
+            default                  => 'Departure',
+        };
     }
 }

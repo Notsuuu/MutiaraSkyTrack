@@ -10,7 +10,6 @@ use App\Models\FlightTraffic;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Navigation\NavigationItem;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
@@ -22,6 +21,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
@@ -44,10 +44,6 @@ class FlightTrafficResource extends Resource
     protected static ?string $pluralModelLabel = 'Data Penerbangan';
 
     protected static ?string $recordTitleAttribute = 'flight_number';
-
-    // ──────────────────────────────────────
-    // NAVIGATION
-    // ──────────────────────────────────────
 
     public static function getNavigationItems(): array
     {
@@ -77,10 +73,6 @@ class FlightTrafficResource extends Resource
                 ->sort(3),
         ];
     }
-
-    // ──────────────────────────────────────
-    // REUSABLE OPTIONS & HELPERS
-    // ──────────────────────────────────────
 
     public static function getStatusOptions(): array
     {
@@ -141,15 +133,10 @@ class FlightTrafficResource extends Resource
             ->helperText('3 huruf kode IATA, atau "LOCAL AREA" untuk rute non-standar (perintis/helikopter)');
     }
 
-    // ──────────────────────────────────────
-    // FORM SCHEMA
-    // ──────────────────────────────────────
-
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                // ── 1. INFORMASI ARMADA ─────────────────────────────────
                 Section::make('Informasi Armada')
                     ->icon('heroicon-o-paper-airplane')
                     ->schema([
@@ -226,7 +213,6 @@ class FlightTrafficResource extends Resource
                             ]),
                     ]),
 
-                // ── 2. RUTE & JADWAL ─────────────────────────────────
                 Section::make('Rute & Jadwal')
                     ->icon('heroicon-o-map-pin')
                     ->schema([
@@ -275,7 +261,6 @@ class FlightTrafficResource extends Resource
                             ]),
                     ]),
 
-                // ── 3. KLASIFIKASI & STATUS ─────────────────────────────────
                 Section::make('Klasifikasi & Status')
                     ->icon('heroicon-o-tag')
                     ->schema([
@@ -341,7 +326,6 @@ class FlightTrafficResource extends Resource
                             ->visible(fn (Get $get) => $get('flight_status') === 'Delay'),
                     ]),
 
-                // ── 4. PAYLOAD ─────────────────────────────────
                 Section::make('Payload (Muatan)')
                     ->icon('heroicon-o-scale')
                     ->schema([
@@ -383,10 +367,6 @@ class FlightTrafficResource extends Resource
             ])
             ->columns(1);
     }
-
-    // ──────────────────────────────────────
-    // TABLE
-    // ──────────────────────────────────────
 
     public static function table(Table $table): Table
     {
@@ -530,7 +510,6 @@ class FlightTrafficResource extends Resource
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                // ── RINCIAN DEMOGRAFI PENUMPANG ─────────────────────────
                 Tables\Columns\TextColumn::make('pax_adult')
                     ->label('Dewasa & Remaja (≥12th)')
                     ->tooltip('Penumpang usia 12 tahun ke atas (termasuk kategori remaja)')
@@ -571,7 +550,6 @@ class FlightTrafficResource extends Resource
                     ->color('success')
                     ->weight('bold'),
 
-                // ── LOGISTIK ─────────────────────────────────────────
                 Tables\Columns\TextColumn::make('baggage_kg')
                     ->label('Bagasi (kg)')
                     ->numeric(decimalPlaces: 2)
@@ -609,7 +587,6 @@ class FlightTrafficResource extends Resource
             ])
             ->defaultSort('schedule_date', 'desc')
             ->filters([
-                // ── FILTER KATEGORI PENUMPANG ─────────────────────────
                 SelectFilter::make('pax_demographic')
                     ->label('Kategori Penumpang')
                     ->placeholder('Semua Kategori Penumpang')
@@ -719,6 +696,61 @@ class FlightTrafficResource extends Resource
                 ]),
             ])
             ->headerActions([
+                // ── TOMBOL SINKRONISASI GOOGLE SHEETS ──────────────────────────────
+                Actions\Action::make('sync_sheets')
+                    ->label('Sync Google Sheets')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('info')
+                    ->tooltip('Sinkronkan data penerbangan terbaru langsung dari spreadsheet online instansi')
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-arrow-path')
+                    ->modalIconColor('info')
+                    ->modalHeading('Sinkronisasi Google Sheets')
+                    ->modalDescription('Sistem akan membaca spreadsheet online UPBU Mutiara Sis Al-Jufri Palu dan memperbarui database secara real-time. Proses ini memerlukan waktu beberapa detik.')
+                    ->modalSubmitActionLabel('⚡ Mulai Sinkronisasi')
+                    ->modalCancelActionLabel('Batal')
+                    ->modalSubmitAction(fn (Actions\Action $action) => $action
+                        ->extraAttributes([
+                            'data-sync-submit' => 'true',
+                            'x-on:click' => '
+                                if (window.SkyTrackToast) {
+                                    window.SkyTrackToast.dismissActiveModal();
+                                    window.SkyTrackToast.showLoading();
+                                }
+                            ',
+                        ])
+                    )
+                    ->action(function ($livewire) {
+                        set_time_limit(300);
+
+                        try {
+                            Artisan::call('flight:sync');
+                            $output = Artisan::output();
+
+                            $summary = 'Data berhasil disinkronkan ke database.';
+                            if (preg_match('/Created:\s*(\d+),\s*Updated:\s*(\d+),\s*Skipped:\s*(\d+)/i', $output, $matches)) {
+                                $created = number_format((int) $matches[1], 0, ',', '.');
+                                $updated = number_format((int) $matches[2], 0, ',', '.');
+                                $skipped = number_format((int) $matches[3], 0, ',', '.');
+
+                                $summary = "✨ {$created} Data Baru | 🔄 {$updated} Diperbarui | ⏭️ {$skipped} Dilewati";
+                            }
+
+                            // Kirim satu event resmi ke toast.js
+                            $livewire->dispatch('sk-sync-result', [
+                                'type'    => 'success',
+                                'title'   => 'Sinkronisasi Berhasil!',
+                                'message' => $summary,
+                            ]);
+                        } catch (\Throwable $e) {
+                            $livewire->dispatch('sk-sync-result', [
+                                'type'    => 'danger',
+                                'title'   => 'Gagal Sinkronisasi',
+                                'message' => 'Terjadi kendala saat membaca Google Sheets: ' . $e->getMessage(),
+                            ]);
+                        }
+                    }),
+
                 Actions\Action::make('download_template')
                     ->label('Unduh Template')
                     ->icon('heroicon-o-arrow-down-tray')
@@ -743,13 +775,9 @@ class FlightTrafficResource extends Resource
             ->paginated([25, 50, 100, 'all'])
             ->defaultPaginationPageOption(25)
             ->emptyStateHeading('Belum ada data penerbangan')
-            ->emptyStateDescription('Tambahkan data secara manual atau import dari file Excel.')
+            ->emptyStateDescription('Tambahkan data secara manual, import dari file Excel, atau gunakan tombol Sync Google Sheets.')
             ->emptyStateIcon('heroicon-o-chart-bar-square');
     }
-
-    // ──────────────────────────────────────
-    // RESOURCE PAGES
-    // ──────────────────────────────────────
 
     public static function getRelations(): array
     {
