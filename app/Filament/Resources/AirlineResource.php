@@ -133,7 +133,7 @@ class AirlineResource extends Resource
                             ->maxValue(9999)
                             ->default(0)
                             ->suffix('penerbangan/minggu')
-                            ->helperText('Rata-rata jumlah penerbangan per minggu ke PLW.'),
+                            ->helperText('Rata-rata jumlah penerbangan per minggu ke PLW (kosongkan / 0 untuk hitung otomatis dari transaksi).'),
 
                         Forms\Components\Textarea::make('notes')
                             ->label('Catatan')
@@ -163,6 +163,7 @@ class AirlineResource extends Resource
                 Tables\Columns\TextColumn::make('iata_code')
                     ->label('IATA')
                     ->searchable()
+                    ->sortable()
                     ->badge()
                     ->color('gray')
                     ->placeholder('—'),
@@ -220,12 +221,32 @@ class AirlineResource extends Resource
 
                 Tables\Columns\TextColumn::make('flight_frequency')
                     ->label('Frekuensi/Minggu')
-                    ->numeric()
-                    ->sortable()
-                    ->suffix(' pnb')
-                    ->alignCenter(),
+                    ->state(function (Airline $record): int {
+                        // 1. Jika diinput manual > 0, gunakan nilai manual tersebut
+                        if ((int) $record->flight_frequency > 0) {
+                            return (int) $record->flight_frequency;
+                        }
 
-                Tables\Columns\TextColumn::make('flightTraffics_count')
+                        // 2. Hitung rata-rata: total penerbangan tahun berjalan dibagi jumlah minggu yang berjalan
+                        $currentWeek = max(1, (int) now()->weekOfYear);
+                        $countThisYear = (int) ($record->flights_this_year_count ?? 0);
+
+                        // Fallback: Jika di tahun berjalan belum ada data tetapi ada riwayat, gunakan total data dibagi 52 minggu
+                        if ($countThisYear === 0 && (int) ($record->flight_traffics_count ?? 0) > 0) {
+                            return (int) max(1, round($record->flight_traffics_count / 52));
+                        }
+
+                        return (int) round($countThisYear / $currentWeek);
+                    })
+                    ->sortable(query: function (Builder $query, string $direction) {
+                        return $query->orderBy('flights_this_year_count', $direction);
+                    })
+                    ->suffix(' pnb')
+                    ->alignCenter()
+                    ->badge()
+                    ->color(fn (int $state): string => $state > 0 ? 'info' : 'gray'),
+
+                Tables\Columns\TextColumn::make('flight_traffics_count')
                     ->label('Total Data')
                     ->counts('flightTraffics')
                     ->sortable()
@@ -307,6 +328,9 @@ class AirlineResource extends Resource
         return parent::getEloquentQuery()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
+            ])
+            ->withCount([
+                'flightTraffics as flights_this_year_count' => fn (Builder $query) => $query->whereYear('schedule_date', now()->year),
             ]);
     }
 }

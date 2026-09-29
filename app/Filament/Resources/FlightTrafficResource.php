@@ -105,10 +105,11 @@ class FlightTrafficResource extends Resource
         ];
     }
 
-    private static function paxInput(string $name, string $label): Forms\Components\TextInput
+    private static function paxInput(string $name, string $label, ?string $helper = null): Forms\Components\TextInput
     {
         return Forms\Components\TextInput::make($name)
             ->label($label)
+            ->helperText($helper)
             ->numeric()
             ->integer()
             ->minValue(0)
@@ -348,15 +349,15 @@ class FlightTrafficResource extends Resource
                             ->schema([
                                 Section::make('Penumpang Utama')
                                     ->schema([
-                                        self::paxInput('pax_adult', 'Dewasa'),
-                                        self::paxInput('pax_child', 'Anak-Anak'),
-                                        self::paxInput('pax_infant', 'Bayi (Infant)'),
+                                        self::paxInput('pax_adult', 'Dewasa & Remaja (≥12 thn)', 'Termasuk usia remaja 12–17 tahun'),
+                                        self::paxInput('pax_child', 'Anak-Anak (2–11 thn)', 'Anak usia 2 sampai 11 tahun'),
+                                        self::paxInput('pax_infant', 'Bayi (< 2 thn)', 'Bayi usia di bawah 2 tahun'),
                                     ])
                                     ->columnSpan(1),
 
                                 Section::make('Penumpang Transit')
                                     ->schema([
-                                        self::paxInput('transit_pax_adult', 'Dewasa (Transit)'),
+                                        self::paxInput('transit_pax_adult', 'Dewasa & Remaja (Transit)'),
                                         self::paxInput('transit_pax_child', 'Anak-Anak (Transit)'),
                                         self::paxInput('transit_pax_infant', 'Bayi (Transit)'),
                                     ])
@@ -405,7 +406,7 @@ class FlightTrafficResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('schedule_time')
-                    ->label('Jam Rencana')
+                    ->label('Jam')
                     ->alignCenter()
                     ->formatStateUsing(fn ($state) => substr($state, 0, 5)),
 
@@ -529,24 +530,48 @@ class FlightTrafficResource extends Resource
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
 
+                // ── RINCIAN DEMOGRAFI PENUMPANG ─────────────────────────
                 Tables\Columns\TextColumn::make('pax_adult')
-                    ->label('Dewasa')
+                    ->label('Dewasa & Remaja (≥12th)')
+                    ->tooltip('Penumpang usia 12 tahun ke atas (termasuk kategori remaja)')
                     ->numeric()
+                    ->sortable()
                     ->alignCenter()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->badge()
+                    ->color('gray'),
 
                 Tables\Columns\TextColumn::make('pax_child')
-                    ->label('Anak')
+                    ->label('Anak (2-11th)')
+                    ->tooltip('Penumpang anak-anak usia 2 sampai 11 tahun')
                     ->numeric()
+                    ->sortable()
                     ->alignCenter()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->badge()
+                    ->color(fn ($state) => $state > 0 ? 'info' : 'gray')
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 Tables\Columns\TextColumn::make('pax_infant')
-                    ->label('Bayi')
+                    ->label('Bayi (<2th)')
+                    ->tooltip('Penumpang bayi usia di bawah 2 tahun')
+                    ->numeric()
+                    ->sortable()
+                    ->alignCenter()
+                    ->badge()
+                    ->color(fn ($state) => $state > 0 ? 'warning' : 'gray')
+                    ->toggleable(isToggledHiddenByDefault: false),
+
+                Tables\Columns\TextColumn::make('total_pax')
+                    ->label('Total PAX')
+                    ->state(fn (FlightTraffic $record): int =>
+                        (int) ($record->pax_adult ?? 0) + (int) ($record->pax_child ?? 0) + (int) ($record->pax_infant ?? 0)
+                    )
                     ->numeric()
                     ->alignCenter()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->badge()
+                    ->color('success')
+                    ->weight('bold'),
 
+                // ── LOGISTIK ─────────────────────────────────────────
                 Tables\Columns\TextColumn::make('baggage_kg')
                     ->label('Bagasi (kg)')
                     ->numeric(decimalPlaces: 2)
@@ -584,6 +609,31 @@ class FlightTrafficResource extends Resource
             ])
             ->defaultSort('schedule_date', 'desc')
             ->filters([
+                // ── FILTER KATEGORI PENUMPANG ─────────────────────────
+                SelectFilter::make('pax_demographic')
+                    ->label('Kategori Penumpang')
+                    ->placeholder('Semua Kategori Penumpang')
+                    ->native(false)
+                    ->options([
+                        'with_children'  => 'Membawa Anak-Anak (2-11 thn)',
+                        'with_infants'   => 'Membawa Bayi (< 2 thn)',
+                        'adults_only'    => 'Hanya Dewasa & Remaja (Tanpa Anak & Bayi)',
+                        'has_passengers' => 'Penerbangan Berpenumpang (PAX > 0)',
+                        'no_passengers'  => 'Penerbangan Kosong / Kargo Saja (PAX = 0)',
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        return match ($data['value'] ?? null) {
+                            'with_children'  => $query->where('pax_child', '>', 0),
+                            'with_infants'   => $query->where('pax_infant', '>', 0),
+                            'adults_only'    => $query->where('pax_adult', '>', 0)
+                                                      ->where(fn ($q) => $q->whereNull('pax_child')->orWhere('pax_child', 0))
+                                                      ->where(fn ($q) => $q->whereNull('pax_infant')->orWhere('pax_infant', 0)),
+                            'has_passengers' => $query->whereRaw('(COALESCE(pax_adult, 0) + COALESCE(pax_child, 0) + COALESCE(pax_infant, 0)) > 0'),
+                            'no_passengers'  => $query->whereRaw('(COALESCE(pax_adult, 0) + COALESCE(pax_child, 0) + COALESCE(pax_infant, 0)) = 0'),
+                            default          => $query,
+                        };
+                    }),
+
                 Filter::make('schedule_date')
                     ->label('Tanggal Penerbangan')
                     ->schema([

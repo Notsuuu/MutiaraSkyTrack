@@ -14,7 +14,8 @@ class FlightCoverageChart extends ChartWidget
 
     protected int | string | array $columnSpan = [
         'default' => 1,
-        'lg'      => 1,
+        'md'      => 1,
+        'xl'      => 2,
     ];
 
     protected string $view = 'filament.widgets.animated-chart';

@@ -13,13 +13,9 @@ class Dashboard extends BaseDashboard
 {
     use HasFiltersForm;
 
-    // Kosongkan title properti — akan override via getTitle()
     protected static ?string $navigationLabel = 'Dashboard';
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-home';
 
-    /**
-     * Override getTitle() — lebih reliable daripada $title property di Dashboard.
-     */
     public function getTitle(): string
     {
         return 'Ringkasan Lalu Lintas Udara';
@@ -68,11 +64,20 @@ class Dashboard extends BaseDashboard
     {
         return [
             \App\Filament\Widgets\StatsOverview::class,
+
+            // Baris 1: Grafik Garis Tren Pergerakan (Membentang Penuh)
             \App\Filament\Widgets\FlightMovementChart::class,
+
+            // Baris 2: Tiga Donut Chart Sejajar (Masing-masing 2 dari 6 kolom)
             \App\Filament\Widgets\FlightCoverageChart::class,
             \App\Filament\Widgets\FlightActivityChart::class,
+            \App\Filament\Widgets\PopularAirlineShareChart::class,
+
+            // Baris 3: Dua Grafik Batang Maskapai Sejajar (Masing-masing 3 dari 6 kolom)
             \App\Filament\Widgets\AirlineFrequencyChart::class,
             \App\Filament\Widgets\AirlinePassengerVolumeChart::class,
+
+            // Baris 4: Grafik Garis Penumpang & Kargo (Membentang Penuh)
             \App\Filament\Widgets\PassengerCargoTrendChart::class,
         ];
     }
@@ -81,7 +86,8 @@ class Dashboard extends BaseDashboard
     {
         return [
             'default' => 1,
-            'lg'      => 2,
+            'md'      => 2,
+            'xl'      => 6,
         ];
     }
 }

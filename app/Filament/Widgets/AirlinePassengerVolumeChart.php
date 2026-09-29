@@ -14,7 +14,8 @@ class AirlinePassengerVolumeChart extends ChartWidget
 
     protected int | string | array $columnSpan = [
         'default' => 1,
-        'lg'      => 1,
+        'md'      => 1,
+        'xl'      => 3,
     ];
 
     protected string $view = 'filament.widgets.animated-chart';
@@ -25,9 +26,12 @@ class AirlinePassengerVolumeChart extends ChartWidget
 
         $data = FlightTraffic::with('airline')
             ->whereYear('schedule_date', $tahun)
-            ->selectRaw('airline_id, SUM(pax_adult + pax_child + pax_infant) as total_pax')
+            ->selectRaw('
+                airline_id,
+                SUM(COALESCE(pax_adult, 0) + COALESCE(pax_child, 0) + COALESCE(pax_infant, 0)) as total_penumpang
+            ')
             ->groupBy('airline_id')
-            ->orderByDesc('total_pax')
+            ->orderByDesc('total_penumpang')
             ->limit(7)
             ->get();
 
@@ -35,7 +39,7 @@ class AirlinePassengerVolumeChart extends ChartWidget
             'datasets' => [
                 [
                     'label'           => 'Jumlah Orang',
-                    'data'            => $data->pluck('total_pax')->toArray(),
+                    'data'            => $data->map(fn ($item) => (int) $item->total_penumpang)->toArray(),
                     'backgroundColor' => '#3b82f6',
                     'borderRadius'    => 6,
                     'maxBarThickness' => 48,

@@ -12,10 +12,8 @@ class FlightMovementChart extends ChartWidget
 
     protected ?string $heading = 'Tren Pergerakan Penerbangan';
 
-    protected int | string | array $columnSpan = [
-        'default' => 1,
-        'lg'      => 2,
-    ];
+    // Membentang penuh 1 baris di grid dashboard
+    protected int | string | array $columnSpan = 'full';
 
     protected string $view = 'filament.widgets.animated-chart';
 
@@ -24,19 +22,21 @@ class FlightMovementChart extends ChartWidget
         $tahun  = $this->filters['tahun'] ?? '2026';
         $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
+        // Cukup 1 query terkelompok untuk mengambil pergerakan Arrival & Departure setahun
+        $raw = FlightTraffic::whereYear('schedule_date', $tahun)
+            ->whereIn('movement', ['Arrival', 'Departure'])
+            ->selectRaw('MONTH(schedule_date) as bulan, movement, COUNT(*) as total')
+            ->groupBy('bulan', 'movement')
+            ->get();
+
         $arrivalData   = [];
         $departureData = [];
 
         for ($m = 1; $m <= 12; $m++) {
-            $arrivalData[] = FlightTraffic::whereYear('schedule_date', $tahun)
-                ->whereMonth('schedule_date', $m)
-                ->where('movement', 'Arrival')
-                ->count();
+            $monthRecords = $raw->where('bulan', $m);
 
-            $departureData[] = FlightTraffic::whereYear('schedule_date', $tahun)
-                ->whereMonth('schedule_date', $m)
-                ->where('movement', 'Departure')
-                ->count();
+            $arrivalData[]   = $monthRecords->where('movement', 'Arrival')->first()->total ?? 0;
+            $departureData[] = $monthRecords->where('movement', 'Departure')->first()->total ?? 0;
         }
 
         return [

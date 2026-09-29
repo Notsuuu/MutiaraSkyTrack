@@ -5,7 +5,6 @@ namespace App\Filament\Widgets;
 use App\Models\FlightTraffic;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
-use Illuminate\Support\Facades\DB;
 
 class PassengerCargoTrendChart extends ChartWidget
 {
@@ -13,10 +12,7 @@ class PassengerCargoTrendChart extends ChartWidget
 
     protected ?string $heading = 'Tren Perbandingan Penumpang & Kargo';
 
-    protected int | string | array $columnSpan = [
-        'default' => 1,
-        'lg'      => 2,
-    ];
+    protected int | string | array $columnSpan = 'full';
 
     protected string $view = 'filament.widgets.animated-chart';
 
@@ -25,17 +21,23 @@ class PassengerCargoTrendChart extends ChartWidget
         $tahun  = $this->filters['tahun'] ?? '2026';
         $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
+        $monthlyData = FlightTraffic::whereYear('schedule_date', $tahun)
+            ->selectRaw('
+                MONTH(schedule_date) as bulan,
+                SUM(COALESCE(pax_adult, 0) + COALESCE(pax_child, 0) + COALESCE(pax_infant, 0)) as total_penumpang,
+                SUM(COALESCE(cargo_kg, 0)) as total_kargo
+            ')
+            ->groupBy('bulan')
+            ->get()
+            ->keyBy('bulan');
+
         $paxData   = [];
         $cargoData = [];
 
         for ($m = 1; $m <= 12; $m++) {
-            $paxData[] = (int) FlightTraffic::whereYear('schedule_date', $tahun)
-                ->whereMonth('schedule_date', $m)
-                ->sum(DB::raw('pax_adult + pax_child + pax_infant'));
-
-            $cargoData[] = (float) FlightTraffic::whereYear('schedule_date', $tahun)
-                ->whereMonth('schedule_date', $m)
-                ->sum('cargo_kg');
+            $row = $monthlyData->get($m);
+            $paxData[]   = (int) ($row->total_penumpang ?? 0);
+            $cargoData[] = (float) ($row->total_kargo ?? 0);
         }
 
         return [

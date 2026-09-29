@@ -20,6 +20,13 @@ const ICONS = {
             <path stroke-linecap="round" stroke-linejoin="round"
                   d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z" />
         </svg>`,
+    'Laporan': `
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+             stroke-width="1.5" stroke="currentColor"
+             class="fi-icon fi-size-md sk-injected-icon">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+        </svg>`,
     'Master Data': `
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
              stroke-width="1.5" stroke="currentColor"
@@ -119,40 +126,67 @@ class SkyTrackSidebar {
         });
     }
 
+    injectCustomStyles() {
+        if (document.getElementById('sk-sidebar-custom-css')) return;
+
+        const style = document.createElement('style');
+        style.id = 'sk-sidebar-custom-css';
+        style.textContent = `
+            /* 1. Header grup yang aktif tidak boleh memakai background biru pekat (agar tidak bentrok dengan sub-item) */
+            .fi-sidebar-group:has(.fi-sidebar-item-active) > .fi-sidebar-group-btn,
+            .fi-sidebar-group:has([aria-current="page"]) > .fi-sidebar-group-btn,
+            .fi-sidebar-group:has(.fi-active) > .fi-sidebar-group-btn {
+                background-color: transparent !important;
+                color: #e2e8f0 !important;
+            }
+
+            .fi-sidebar-group > .fi-sidebar-group-btn:hover {
+                background-color: rgba(255, 255, 255, 0.06) !important;
+            }
+
+            /* 2. Styling ikon grup yang diinjeksi */
+            .sk-injected-icon {
+                width: 1.25rem;
+                height: 1.25rem;
+                margin-right: 0.5rem;
+                flex-shrink: 0;
+            }
+
+            /* 3. Sub-item aktif tetap solid biru dengan teks putih terang */
+            .fi-sidebar-item-active a,
+            .fi-sidebar-item a[aria-current="page"] {
+                background-color: #0284c7 !important;
+                color: #ffffff !important;
+                font-weight: 600 !important;
+                border-radius: 0.5rem !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
     reorderLaporan() {
         const ul0 = document.querySelector('.fi-sidebar-nav-groups');
         if (!ul0) return;
 
         let kelolaLi = null;
-        for (const li of ul0.children) {
-            if (li.querySelector('.fi-sidebar-group-label')?.textContent.trim() === 'Kelola Data') {
-                kelolaLi = li; break;
-            }
-        }
-        if (!kelolaLi) return;
-
         let laporanLi = null;
-        for (const lbl of document.querySelectorAll('.fi-sidebar-item-label')) {
-            if (lbl.textContent.trim() === 'Laporan') { laporanLi = lbl.closest('li'); break; }
-        }
-        if (!laporanLi) return;
 
-        laporanLi.classList.add('sk-standalone-item');
+        for (const li of ul0.children) {
+            const label = li.querySelector('.fi-sidebar-group-label, .fi-sidebar-item-label')?.textContent.trim();
+            if (label === 'Kelola Data') kelolaLi = li;
+            if (label === 'Laporan') laporanLi = li;
+        }
+
+        if (!kelolaLi || !laporanLi) return;
         if (laporanLi.parentElement === ul0 && laporanLi.previousElementSibling === kelolaLi) return;
 
         ul0.insertBefore(laporanLi, kelolaLi.nextSibling);
-        log('📋 Reorder: Laporan moved');
+        log('📋 Reorder: Laporan diletakkan setelah Kelola Data');
     }
 
-    // ═══════════════════════════════════════════════════════
-    // ★ EXPAND grup yang punya item aktif (dipanggil setelah navigate)
-    // ═══════════════════════════════════════════════════════
     expandActiveGroup() {
         document.querySelectorAll('.fi-sidebar-group').forEach(group => {
-            // Skip kalau grup tidak punya item aktif
             if (!this.hasActiveItem(group)) return;
-
-            // Skip kalau sudah expanded
             if (this.isGroupExpanded(group)) return;
 
             const toggle = this.getGroupToggle(group);
@@ -185,9 +219,6 @@ class SkyTrackSidebar {
         });
     }
 
-    // ═══════════════════════════════════════════════════════
-    // ★ INSTANT NAVIGATE — intercept click sebelum Filament expand
-    // ═══════════════════════════════════════════════════════
     handleGroupClick(e) {
         if (this.internalClick) return;
         this.cancelPoll();
@@ -206,7 +237,6 @@ class SkyTrackSidebar {
         if (this.hasActiveItem(group)) return;
         if (this.isGroupExpanded(group)) return;
 
-        // ★ Instant navigate — cegah Filament toggle dropdown
         const firstLink = group.querySelector('.fi-sidebar-group-items a[href]');
         if (!firstLink) return;
 
@@ -224,25 +254,21 @@ class SkyTrackSidebar {
         firstLink.click();
     }
 
-    // ═══════════════════════════════════════════════════════
-    // Refresh pipeline
-    // ═══════════════════════════════════════════════════════
     refresh() {
+        this.injectCustomStyles();
         this.reorderLaporan();
         this.injectGroupIcons();
         this.normalizeSpacing();
-        this.expandActiveGroup();   // ← EXPAND dulu (kalau ada yang aktif)
-        this.collapseInactive();    // ← Baru collapse sisanya
+        this.expandActiveGroup();
+        this.collapseInactive();
     }
 
     init() {
-        // Global listener (capture phase) — once only
         document.addEventListener('click', (e) => this.handleGroupClick(e), true);
 
         document.addEventListener('livewire:navigating', () => this.cancelPoll());
         document.addEventListener('livewire:navigated', () => {
             this.cancelPoll();
-            // Multi-stage refresh — expand grup aktif di setiap stage
             this.refresh();
             setTimeout(() => this.refresh(), 100);
             setTimeout(() => this.refresh(), 250);
